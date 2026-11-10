@@ -55,6 +55,7 @@ details output{color:var(--accent);font-weight:700}
 #cmpHint{display:flex;flex-direction:column;gap:6px}
 .pk{background:var(--panel2);border-radius:10px;padding:6px 10px;color:var(--ink)}
 .pk b{color:var(--accent)}
+.des{background:var(--panel2);border-radius:10px;padding:8px 10px;margin:10px 0 0;font-size:14px}.des b{color:var(--accent)}
 .seg{display:flex;gap:6px}.seg button{flex:1}
 .camb{display:flex;align-items:center;justify-content:center;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 4px;cursor:pointer;font-weight:600}
 .camb:focus-within{outline:2px solid var(--accent);outline-offset:2px}
@@ -100,6 +101,7 @@ details output{color:var(--accent);font-weight:700}
 <section class="card">
   <h2 id="iName"></h2>
   <p class="sub" id="iTag"></p>
+  <p class="des" id="iDes"></p>
   <div class="meter"><span>اتساع مجال الرؤية</span><div class="track"><div class="fill" id="mField"></div></div></div>
   <div class="meter"><span>سهولة التعوّد</span><div class="track"><div class="fill" id="mAdapt"></div></div></div>
   <ul class="ben" id="iBen"></ul>
@@ -115,6 +117,8 @@ details output{color:var(--accent);font-weight:700}
   <input type="range" id="axis" min="0" max="180" step="5" value="180">
   <p><label for="add">قوة الإضافة للعميل:</label> <output id="oAdd"></output></p>
   <input type="range" id="add" min="0.25" max="4" step="0.25" value="2">
+  <p><label for="des">تصميم العدسة الأولى:</label></p>
+  <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
   <p>العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
@@ -131,18 +135,24 @@ const B_EXC=B_SIG.concat(['تركيز حاد فوري','تكيّف سهل وسر
 const B_DIG=['رؤية واضحة للبعيد والمتوسط والقريب','تصميم رقمي للاستخدام اليومي'];
 const B_PRM=B_DIG.concat(['مجال أوسع للقراءة والشاشة']);
 const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكورية']);
-const LENSES=[
- {b:0,ar:'ديجيتال',en:'Digital',cf:.85,nf:.70,df:.70,gk:.24,field:30,adapt:40,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
- {b:0,ar:'بريميوم',en:'Premium',cf:.95,nf:.78,df:.80,gk:.22,field:38,adapt:45,tag:'راحة أكثر في القراءة والشاشة.',ben:B_PRM},
- {b:0,ar:'أوبتيما',en:'Optima',cf:1.05,nf:.86,df:.90,gk:.20,field:46,adapt:50,tag:'أفضل ما في الفئة الكورية.',ben:B_OPT},
- {b:1,ar:'ستاندرد',en:'Standard',cf:1.0,nf:.80,df:.85,gk:.21,field:42,adapt:45,tag:'عدسة متعددة البؤر تعتمد عليها كل يوم.',ben:B_STD},
- {b:1,ar:'بريمير',en:'Premier',cf:1.0,nf:.80,df:.85,gk:.21,field:42,adapt:45,tag:'نفس العدسة الموثوقة مع حماية من الضوء الأزرق.',ben:B_PRE},
- {b:1,ar:'إيليت',en:'Elite',cf:1.2,nf:.98,df:1.0,gk:.18,field:58,adapt:60,tag:'عدسة أرفع وأوضح بمجال رؤية أوسع.',ben:B_ELI},
- {b:2,ar:'بريستيج',en:'Prestige',cf:1.3,nf:1.05,df:1.1,gk:.17,field:68,adapt:70,tag:'تجربة سلسة ومريحة لحياتك اليومية.',ben:B_PRS},
- {b:2,ar:'سيجنتشر',en:'Signature',cf:1.5,nf:1.15,df:1.2,gk:.15,field:82,adapt:88,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
- {b:2,ar:'إكسلانس',en:'Excellence',cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
+const DESIGNS=[
+ {ar:'سفريك',en:'Spherical',k:1.6,ic:'🔵',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
+ {ar:'أسفريك',en:'Aspheric',k:1.15,ic:'🟢',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
+ {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,ic:'🟡',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
+ {ar:'فري فورم',en:'FreeForm',k:.5,ic:'🟣',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
 ];
-const S={i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
+const LENSES=[
+ {b:0,ar:'ديجيتال',en:'Digital',d:1,cf:.85,nf:.70,df:.70,gk:.24,field:30,adapt:40,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
+ {b:0,ar:'بريميوم',en:'Premium',d:1,cf:.95,nf:.78,df:.80,gk:.22,field:38,adapt:45,tag:'راحة أكثر في القراءة والشاشة.',ben:B_PRM},
+ {b:0,ar:'أوبتيما',en:'Optima',d:2,cf:1.05,nf:.86,df:.90,gk:.20,field:46,adapt:50,tag:'أفضل ما في الفئة الكورية.',ben:B_OPT},
+ {b:1,ar:'ستاندرد',en:'Standard',d:0,cf:1.0,nf:.80,df:.85,gk:.21,field:42,adapt:45,tag:'عدسة متعددة البؤر تعتمد عليها كل يوم.',ben:B_STD},
+ {b:1,ar:'بريمير',en:'Premier',d:0,cf:1.0,nf:.80,df:.85,gk:.21,field:42,adapt:45,tag:'نفس العدسة الموثوقة مع حماية من الضوء الأزرق.',ben:B_PRE},
+ {b:1,ar:'إيليت',en:'Elite',d:1,cf:1.2,nf:.98,df:1.0,gk:.18,field:58,adapt:60,tag:'عدسة أرفع وأوضح بمجال رؤية أوسع.',ben:B_ELI},
+ {b:2,ar:'بريستيج',en:'Prestige',d:2,cf:1.3,nf:1.05,df:1.1,gk:.17,field:68,adapt:70,tag:'تجربة سلسة ومريحة لحياتك اليومية.',ben:B_PRS},
+ {b:2,ar:'سيجنتشر',en:'Signature',d:2,cf:1.5,nf:1.15,df:1.2,gk:.15,field:82,adapt:88,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
+ {b:2,ar:'إكسلانس',en:'Excellence',d:3,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
+];
+const S={dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 const K=1.7,L=14,M=2.2,NP=3.2,GX=96,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -151,8 +161,9 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const full=T=>BRANDS[T.b].ar+' '+T.ar;
 
 /* ---------- simplified zone model ---------- */
+const desOf=T=>DESIGNS[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d];
 function rxNarrow(T){
-  const q=T.gk/.12, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
+  const q=desOf(T).k, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
   return 1/(1+q*(.035*Math.abs(S.sph)+.07*Math.abs(S.cyl)*(1+.5*ob)));
 }
 function halfW(T,y){
@@ -249,7 +260,8 @@ function computeMasks(){
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*160,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
         const T=x>0?TB:TA,d=Math.abs(x)-halfW(T,y);
-        const ba=d>0?clamp(d*S.add*T.gk/1.5,0,1)*.6:0;
+        const rxb=1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl));
+        const ba=d>0?clamp(d*S.add*T.gk*rxb/1.5,0,1)*.6:0;
         const bd=SRC==='scene'?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
         be=Math.max(SRC==='scene'?ba:ba*1.4,bd);
       } else be=SRC==='scene'?.3+.5*q:0;
@@ -342,18 +354,20 @@ function render(){
   $('tiers').innerHTML=LENSES.map((t,i)=>t.b===S.vb?`<button data-i="${i}" aria-pressed="${i===S.i||i===S.cmp}">${t.ar}<small>${t.en}</small></button>`:'').join('');
   $('one').setAttribute('aria-pressed',!S.cmpOn);$('two').setAttribute('aria-pressed',S.cmpOn);
   $('cmpHint').innerHTML=!S.cmpOn?'':'<span class="pk">⬅️ الشمال: <b>'+full(T)+'</b></span><span class="pk">➡️ اليمين: <b>'+(S.cmp<0?'اختار من أي ماركة':full(LENSES[S.cmp]))+'</b></span>';
+  const DS=desOf(T);$('iDes').innerHTML='<b>'+DS.ic+' التصميم: '+DS.ar+'</b><br>'+DS.tx;
+  $('des').value=S.dOv;
   $('iName').textContent=full(T);$('iTag').textContent='صناعة '+BRANDS[T.b].from+'. '+T.tag;
   $('mField').style.width=T.field+'%';$('mAdapt').style.width=T.adapt+'%';
   $('iBen').innerHTML=T.ben.map(b=>`<li>${b}</li>`).join('');
-  $('fsName').textContent=full(T);
+  $('fsName').textContent=full(T)+' · '+desOf(T).ar;
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
   $('rxLine').textContent='المقاس: '+sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'° · إضافة +'+S.add.toFixed(2);
   draw();
 }
 S.cmpOn=false;S.vb=-1;
-function pick(i){S.i=clamp(i,0,LENSES.length-1);if(S.cmp===S.i)S.cmp=-1;S.vb=LENSES[S.i].b;render()}
-function tap(i){
+function pick(i){S.dOv=-1;S.i=clamp(i,0,LENSES.length-1);if(S.cmp===S.i)S.cmp=-1;S.vb=LENSES[S.i].b;render()}
+function tap(i){S.dOv=-1;
   if(!S.cmpOn){S.i=i;S.cmp=-1;render();return}
   if(i===S.cmp){S.cmp=-1}
   else if(i===S.i){if(S.cmp>=0){S.i=S.cmp;S.cmp=-1}}
@@ -368,6 +382,7 @@ $('tiers').addEventListener('click',e=>{const b=e.target.closest('button');if(b)
 $('one').addEventListener('click',()=>{S.cmpOn=false;S.cmp=-1;render()});
 $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
+$('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 $('fsUp').addEventListener('click',()=>pick(S.i+1));
 $('fsDown').addEventListener('click',()=>pick(S.i-1));
