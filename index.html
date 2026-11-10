@@ -98,7 +98,8 @@ details output{color:var(--accent);font-weight:700}
     <button id="one" aria-pressed="true">عدسة واحدة</button>
     <button id="two" aria-pressed="false">مقارنة بين عدستين</button>
   </div>
-  <p class="sub" style="margin:10px 0 6px">مناطق الرؤية (دوس على أي منطقة في العدسة أو هنا):</p>
+  <p class="sub" style="margin:10px 0 6px">مناطق الرؤية: الزرار الكبير يظهرها كلها أو يخفيها، والدوسة على أي منطقة في العدسة تظهرها أو تخفيها لوحدها.</p>
+  <button id="zAll" class="big" style="margin-bottom:6px" aria-pressed="false">إظهار كل المناطق</button>
   <div class="grid3" id="zbtns">
     <button data-z="far" aria-pressed="false">🔵 بعيد</button>
     <button data-z="mid" aria-pressed="false">🟢 متوسط</button>
@@ -180,7 +181,7 @@ function halfW(T,y){
   return f*halfW0(T,y,a);
 }
 function halfW0(T,y,a){
-  const wC=M*T.cf*L/(4*a), wN=M*T.nf*14/(a+.5), wD=M*T.df*28/(a+.5);
+  const wC=1.3*M*T.cf*L/(4*a), wN=M*T.nf*14/(a+.5), wD=M*T.df*28/(a+.5);
   if(y>=0) return wD+y*(2+T.df*2.5);
   const t=-y/L;
   if(t<.45) return lerp(wD,wC,ss(t/.45));
@@ -443,10 +444,11 @@ $('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 function syncZ(){const Z=S.zones,any=Z.far||Z.mid||Z.near;
   document.querySelectorAll('#zbtns button').forEach(b=>b.setAttribute('aria-pressed',Z[b.dataset.z]));
-  $('fsZ').setAttribute('aria-pressed',any);draw()}
+  $('fsZ').setAttribute('aria-pressed',any);$('zAll').textContent=any?'إخفاء كل المناطق':'إظهار كل المناطق';draw()}
+function allZ(){const Z=S.zones,v=!(Z.far||Z.mid||Z.near);Z.far=Z.mid=Z.near=v;syncZ()}
 function toggleZ(k){S.zones[k]=!S.zones[k];syncZ()}
 $('zbtns').addEventListener('click',e=>{const b=e.target.closest('button');if(b)toggleZ(b.dataset.z)});
-$('fsZ').addEventListener('click',()=>{const Z=S.zones,v=!(Z.far||Z.mid||Z.near);Z.far=Z.mid=Z.near=v;syncZ()});
+$('fsZ').addEventListener('click',allZ);$('zAll').addEventListener('click',allZ);
 function zoneAt(e){
   const r=cv.getBoundingClientRect();let x,y;
   if(rot){x=e.clientY-r.top;y=r.right-e.clientX}else{x=e.clientX-r.left;y=e.clientY-r.top}
