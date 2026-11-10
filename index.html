@@ -43,8 +43,10 @@ body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 body.fs #fsbar{display:flex}
 #fsSel{display:none;position:absolute;top:8px;left:0;right:0;direction:ltr}
 body.fs.split #fsSel{display:flex}
-#fsSel select{position:absolute;top:0;width:min(44%,300px);flex:none;background:rgba(240,195,106,.95);color:#231a04;font-weight:700;border-color:transparent;direction:rtl}
-#selA{left:25%;transform:translateX(-50%)}#selB{left:75%;transform:translateX(-50%)}
+#fsSel .grp{position:absolute;top:0;width:min(46%,360px);display:flex;gap:6px;transform:translateX(-50%)}
+#grpA{left:25%}#grpB{left:75%}
+#fsSel select{flex:1;min-width:0;background:rgba(240,195,106,.95);color:#231a04;font-weight:700;border-color:transparent;direction:rtl}
+.arr{flex:none;width:44px;padding:6px 0;background:rgba(13,20,48,.82);border-color:rgba(255,255,255,.3);font-size:16px}
 body.fs.split #fsName,body.fs.split #fsUp,body.fs.split #fsDown,body.fs.split #hint{display:none}
 body.fs #hint{bottom:auto;top:10px}
 #fsbar button{background:rgba(13,20,48,.78);border-color:rgba(255,255,255,.25);padding:6px 12px}
@@ -85,12 +87,15 @@ details output{color:var(--accent);font-weight:700}
 
 <div id="wrap">
   <canvas id="cv" aria-label="منظر من خلال العدسة، اسحب لتحريك العدسة"></canvas>
-  <div id="fsSel"><select id="selA" aria-label="العدسة الشمال"></select><select id="selB" aria-label="العدسة اليمين"></select></div>
+  <div id="fsSel">
+    <div class="grp" id="grpA"><button class="arr" data-p="A" data-d="1" aria-label="الفئة التالية">◀</button><select id="selA" aria-label="العدسة الشمال"></select><button class="arr" data-p="A" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
+    <div class="grp" id="grpB"><button class="arr" data-p="B" data-d="1" aria-label="الفئة التالية">◀</button><select id="selB" aria-label="العدسة اليمين"></select><button class="arr" data-p="B" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
+  </div>
   <div id="fsbar">
-    <button id="fsDown">عدسة أقل</button>
+    <button id="fsDown" aria-label="الفئة السابقة">▶</button>
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
-    <button id="fsUp">عدسة أعلى</button>
+    <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
@@ -484,12 +489,17 @@ function zoneAt(e){
   if(Math.pow(Math.abs(u-S.gx)/(26*K),NP)+Math.pow(Math.abs(v-S.gy)/(18*K),NP)>1)return null;
   const yl=-(v-S.gy)/K-3;return yl>=0?'far':yl>-L?'mid':'near';
 }
-$('fsUp').addEventListener('click',()=>pick(S.i+1));
-$('fsDown').addEventListener('click',()=>pick(S.i-1));
+$('fsUp').addEventListener('click',()=>pick(cyc(S.i,1)));
+$('fsDown').addEventListener('click',()=>pick(cyc(S.i,-1)));
 function lensOpts(){return BRANDS.map((b,k)=>'<optgroup label="'+b.ar+'">'+LENSES.map((t,i)=>t.b===k?'<option value="'+i+'">'+full(t)+' · '+t.pr+' ريال</option>':'').join('')+'</optgroup>').join('')}
 $('selA').innerHTML=lensOpts();$('selB').innerHTML=lensOpts();
 $('selA').addEventListener('change',e=>{const i=+e.target.value;if(i===S.cmp)S.cmp=S.i;S.i=i;S.vb=LENSES[i].b;render()});
 $('selB').addEventListener('change',e=>{const i=+e.target.value;if(i===S.i)S.i=S.cmp;S.cmp=i;render()});
+function cyc(i,d){const b=LENSES[i].b,ids=LENSES.map((t,k)=>t.b===b?k:-1).filter(k=>k>=0),n=ids.length;return ids[(ids.indexOf(i)+d+n)%n]}
+$('fsSel').addEventListener('click',e=>{const a=e.target.closest('.arr');if(!a)return;const d=+a.dataset.d;
+  if(a.dataset.p==='A'){let i=cyc(S.i,d);if(i===S.cmp)i=cyc(i,d);S.i=i;S.vb=LENSES[i].b}
+  else{let i=cyc(S.cmp,d);if(i===S.i)i=cyc(i,d);S.cmp=i}
+  render()});
 function syncSplit(){
   document.body.classList.toggle('split',isSplit());
   $('selA').value=S.i;if(S.cmp>=0)$('selB').value=S.cmp;
