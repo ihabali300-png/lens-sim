@@ -107,8 +107,15 @@ details output{color:var(--accent);font-weight:700}
 
 <details>
   <summary>إعدادات البائع</summary>
+  <p><label for="sph">المقاس الكروي (سفير):</label> <output id="oSph"></output></p>
+  <input type="range" id="sph" min="-10" max="8" step="0.25" value="0">
+  <p><label for="cyl">الاستجماتيزم (سلندر):</label> <output id="oCyl"></output></p>
+  <input type="range" id="cyl" min="-6" max="0" step="0.25" value="0">
+  <p><label for="axis">المحور (أكسيس):</label> <output id="oAxis"></output></p>
+  <input type="range" id="axis" min="0" max="180" step="5" value="180">
   <p><label for="add">قوة الإضافة للعميل:</label> <output id="oAdd"></output></p>
-  <input type="range" id="add" min="0.75" max="3.5" step="0.25" value="2">
+  <input type="range" id="add" min="0.25" max="4" step="0.25" value="2">
+  <p id="rxLine" style="color:var(--ink)"></p>
   <p>العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
@@ -135,7 +142,7 @@ const LENSES=[
  {b:2,ar:'سيجنتشر',en:'Signature',cf:1.5,nf:1.15,df:1.2,gk:.15,field:82,adapt:88,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
  {b:2,ar:'إكسلانس',en:'Excellence',cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
-const S={i:7,cmp:-1,add:2,gx:80,gy:47};
+const S={i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 const K=1.7,L=14,M=2.2,NP=3.2,GX=96,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -144,8 +151,15 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const full=T=>BRANDS[T.b].ar+' '+T.ar;
 
 /* ---------- simplified zone model ---------- */
+function rxNarrow(T){
+  const q=T.gk/.12, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
+  return 1/(1+q*(.035*Math.abs(S.sph)+.07*Math.abs(S.cyl)*(1+.5*ob)));
+}
 function halfW(T,y){
-  const a=S.add;
+  const a=S.add,f=rxNarrow(T);
+  return f*halfW0(T,y,a);
+}
+function halfW0(T,y,a){
   const wC=M*T.cf*L/(4*a), wN=M*T.nf*14/(a+.5), wD=M*T.df*28/(a+.5);
   if(y>=0) return wD+y*(2+T.df*2.5);
   const t=-y/L;
@@ -332,7 +346,9 @@ function render(){
   $('mField').style.width=T.field+'%';$('mAdapt').style.width=T.adapt+'%';
   $('iBen').innerHTML=T.ben.map(b=>`<li>${b}</li>`).join('');
   $('fsName').textContent=full(T);
-  $('oAdd').textContent='+'+S.add.toFixed(2);
+  const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
+  $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
+  $('rxLine').textContent='المقاس: '+sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'° · إضافة +'+S.add.toFixed(2);
   draw();
 }
 S.cmpOn=false;S.vb=-1;
@@ -352,6 +368,7 @@ $('tiers').addEventListener('click',e=>{const b=e.target.closest('button');if(b)
 $('one').addEventListener('click',()=>{S.cmpOn=false;S.cmp=-1;render()});
 $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
+['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 $('fsUp').addEventListener('click',()=>pick(S.i+1));
 $('fsDown').addEventListener('click',()=>pick(S.i-1));
 function enterFs(){
