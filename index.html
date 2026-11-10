@@ -103,6 +103,7 @@ details output{color:var(--accent);font-weight:700}
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
+    <button id="fsNative" aria-label="إخفاء شريط المتصفح">⛶</button>
     <button id="fsExit">خروج</button>
   </div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
@@ -547,6 +548,14 @@ $('inst').addEventListener('click',async()=>{if(!instEv)return;instEv.prompt();t
 try{if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self===window.top)navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(_){}
 window.addEventListener('appinstalled',()=>{$('inst').hidden=true});
 $('fsExit').addEventListener('click',exitFs);
+const isApp=()=>window.matchMedia&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches);
+if(isApp())$('fsNative').hidden=true;
+$('fsNative').addEventListener('click',()=>{
+  try{const el=document.documentElement;
+    if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});return}
+    const p=el.requestFullscreen&&el.requestFullscreen();
+    if(p&&p.then)p.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{})}catch(_){}}).catch(()=>{})}catch(_){}
+});
 document.addEventListener('fullscreenchange',()=>{
   if(document.fullscreenElement)nativeFs=true;
   else if(nativeFs){nativeFs=false;document.body.classList.remove('fs','split')}
