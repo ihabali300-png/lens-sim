@@ -41,12 +41,16 @@ body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
 #fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:center}
 body.fs #fsbar{display:flex}
-#fsSel{display:none;position:absolute;top:8px;left:0;right:0;direction:ltr}
+#fsbar{pointer-events:none}#fsbar>*{pointer-events:auto}
+#fsSel{display:none;position:absolute;inset:0;direction:ltr;pointer-events:none}
+#fsSel>*{pointer-events:auto}
 body.fs.split #fsSel{display:flex}
-#fsSel .grp{position:absolute;top:0;width:min(46%,360px);display:flex;gap:6px;transform:translateX(-50%)}
+#fsSel .grp{position:absolute;top:8px;width:min(40%,300px);display:flex;transform:translateX(-50%)}
+#fsSel .arrs{position:absolute;bottom:10px;display:flex;gap:10px;transform:translateX(-50%)}
+#arrA{left:25%}#arrB{left:75%}
 #grpA{left:25%}#grpB{left:75%}
 #fsSel select{flex:1;min-width:0;background:rgba(240,195,106,.95);color:#231a04;font-weight:700;border-color:transparent;direction:rtl}
-.arr{flex:none;width:44px;padding:6px 0;background:rgba(13,20,48,.82);border-color:rgba(255,255,255,.3);font-size:16px}
+.arr{flex:none;width:58px;padding:8px 0;background:rgba(13,20,48,.82);border-color:rgba(255,255,255,.3);font-size:16px}
 body.fs #hint{display:none}
 body.fs.split #fsName,body.fs.split #fsUp,body.fs.split #fsDown,body.fs.split #hint{display:none}
 body.fs #hint{bottom:auto;top:10px}
@@ -89,8 +93,10 @@ details output{color:var(--accent);font-weight:700}
 <div id="wrap">
   <canvas id="cv" aria-label="منظر من خلال العدسة، اسحب لتحريك العدسة"></canvas>
   <div id="fsSel">
-    <div class="grp" id="grpA"><button class="arr" data-p="A" data-d="1" aria-label="الفئة التالية">◀</button><select id="selA" aria-label="العدسة الشمال"></select><button class="arr" data-p="A" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
-    <div class="grp" id="grpB"><button class="arr" data-p="B" data-d="1" aria-label="الفئة التالية">◀</button><select id="selB" aria-label="العدسة اليمين"></select><button class="arr" data-p="B" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
+    <div class="grp" id="grpA"><select id="selA" aria-label="العدسة الشمال"></select></div>
+    <div class="grp" id="grpB"><select id="selB" aria-label="العدسة اليمين"></select></div>
+    <div class="arrs" id="arrA"><button class="arr" data-p="A" data-d="1" aria-label="الفئة التالية">◀</button><button class="arr" data-p="A" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
+    <div class="arrs" id="arrB"><button class="arr" data-p="B" data-d="1" aria-label="الفئة التالية">◀</button><button class="arr" data-p="B" data-d="-1" aria-label="الفئة السابقة">▶</button></div>
   </div>
   <div id="fsbar">
     <button id="fsDown" aria-label="الفئة السابقة">▶</button>
