@@ -35,8 +35,9 @@ button[aria-pressed="true"]{background:var(--accent);color:#231a04;border-color:
 #wrap{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#000;touch-action:none;cursor:grab}
 body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
-#fsbar{display:none;position:absolute;top:8px;left:8px;right:8px;gap:8px;align-items:center;justify-content:center}
+#fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:center}
 body.fs #fsbar{display:flex}
+body.fs #hint{bottom:auto;top:10px}
 #fsbar button{background:rgba(13,20,48,.78);border-color:rgba(255,255,255,.25);padding:6px 12px}
 #fsName{background:var(--accent);color:#231a04;font-weight:700;border-radius:10px;padding:6px 14px;white-space:nowrap}
 #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(13,20,48,.78);border-radius:20px;padding:4px 14px;font-size:13px;pointer-events:none;white-space:nowrap}
@@ -80,7 +81,7 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsUp">عدسة أعلى</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="hint">اسحب العدسة · دوسة واحدة تظهر مناطق الرؤية</div>
+  <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
 <div class="grid3" style="grid-template-columns:repeat(3,1fr)">
@@ -97,7 +98,12 @@ details output{color:var(--accent);font-weight:700}
     <button id="one" aria-pressed="true">عدسة واحدة</button>
     <button id="two" aria-pressed="false">مقارنة بين عدستين</button>
   </div>
-  <label class="zchk"><input type="checkbox" id="zones"> إظهار مناطق الرؤية (بعيد · متوسط · قريب)</label>
+  <p class="sub" style="margin:10px 0 6px">مناطق الرؤية (دوس على أي منطقة في العدسة أو هنا):</p>
+  <div class="grid3" id="zbtns">
+    <button data-z="far" aria-pressed="false">🔵 بعيد</button>
+    <button data-z="mid" aria-pressed="false">🟢 متوسط</button>
+    <button data-z="near" aria-pressed="false">🟠 قريب</button>
+  </div>
   <p class="sub" id="cmpHint" style="margin-top:6px"></p>
 </section>
 
@@ -155,7 +161,7 @@ const LENSES=[
  {b:2,ar:'سيجنتشر',en:'Signature',d:2,cf:1.5,nf:1.15,df:1.2,gk:.15,field:82,adapt:88,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
-const S={zones:false,dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
+const S={zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 const K=1.7,L=14,M=2.2,NP=3.2,GX=96,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -364,12 +370,10 @@ function draw(){
   ctx.beginPath();ctx.rect(-20,-20,200,130);lensPoly(ctx);ctx.fillStyle='rgba(8,12,30,.26)';ctx.fill('evenodd');
   const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.save();ctx.beginPath();lensPoly(ctx);ctx.clip();
-  if(S.zones){
-    zoneFill(ctx,TA,TB,0,30,'rgba(90,170,255,.17)');
-    zoneFill(ctx,TA,TB,-L,0,'rgba(80,220,150,.19)');
-    zoneFill(ctx,TA,TB,-30,-L,'rgba(255,190,80,.19)');
-    (S.cmp>=0?[-11,11]:[0]).forEach(o=>{zlabel(ctx,'بعيد',S.gx+o,S.gy-9*K);zlabel(ctx,'متوسط',S.gx+o*.6,S.gy-(3-L*.5)*K);zlabel(ctx,'قريب',S.gx+o*.6,S.gy-(3-L-3.5)*K)});
-  }
+  const Z=S.zones,offs=S.cmp>=0?[-11,11]:[0];
+  if(Z.far){zoneFill(ctx,TA,TB,0,30,'rgba(90,170,255,.17)');offs.forEach(o=>zlabel(ctx,'بعيد',S.gx+o,S.gy-9*K))}
+  if(Z.mid){zoneFill(ctx,TA,TB,-L,0,'rgba(80,220,150,.19)');offs.forEach(o=>zlabel(ctx,'متوسط',S.gx+o*.6,S.gy-(3-L*.5)*K))}
+  if(Z.near){zoneFill(ctx,TA,TB,-30,-L,'rgba(255,190,80,.19)');offs.forEach(o=>zlabel(ctx,'قريب',S.gx+o*.6,S.gy-(3-L-3.5)*K))}
   /* clear-zone boundary */
   [[TA,-1],[TB,1]].forEach(([T,sd])=>{
     ctx.beginPath();edgePath(ctx,T,sd,24,-30);
@@ -437,9 +441,19 @@ $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
 $('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
-function setZones(v){S.zones=v;$('zones').checked=v;$('fsZ').setAttribute('aria-pressed',v);draw()}
-$('zones').addEventListener('change',e=>setZones(e.target.checked));
-$('fsZ').addEventListener('click',()=>setZones(!S.zones));
+function syncZ(){const Z=S.zones,any=Z.far||Z.mid||Z.near;
+  document.querySelectorAll('#zbtns button').forEach(b=>b.setAttribute('aria-pressed',Z[b.dataset.z]));
+  $('fsZ').setAttribute('aria-pressed',any);draw()}
+function toggleZ(k){S.zones[k]=!S.zones[k];syncZ()}
+$('zbtns').addEventListener('click',e=>{const b=e.target.closest('button');if(b)toggleZ(b.dataset.z)});
+$('fsZ').addEventListener('click',()=>{const Z=S.zones,v=!(Z.far||Z.mid||Z.near);Z.far=Z.mid=Z.near=v;syncZ()});
+function zoneAt(e){
+  const r=cv.getBoundingClientRect();let x,y;
+  if(rot){x=e.clientY-r.top;y=r.right-e.clientX}else{x=e.clientX-r.left;y=e.clientY-r.top}
+  const u=(x-ox)/sc,v=(y-oy)/sc;
+  if(Math.pow(Math.abs(u-S.gx)/(26*K),NP)+Math.pow(Math.abs(v-S.gy)/(18*K),NP)>1)return null;
+  const yl=-(v-S.gy)/K-3;return yl>=0?'far':yl>-L?'mid':'near';
+}
 $('fsUp').addEventListener('click',()=>pick(S.i+1));
 $('fsDown').addEventListener('click',()=>pick(S.i-1));
 function enterFs(){
@@ -468,7 +482,7 @@ cv.addEventListener('pointermove',e=>{
   if(rot){const t=dx;dx=dy;dy=-t}
   S.gx=clamp(S.gx+dx/sc,25,135);S.gy=clamp(S.gy+dy/sc,20,72);draw();
 });
-cv.addEventListener('pointerup',()=>{if(drag&&moved<6)setZones(!S.zones);drag=null});
+cv.addEventListener('pointerup',e=>{if(drag&&moved<6){const z=zoneAt(e);if(z)toggleZ(z)}drag=null});
 cv.addEventListener('pointercancel',()=>{drag=null});
 window.addEventListener('keydown',e=>{
   const m={ArrowLeft:[-3,0],ArrowRight:[3,0],ArrowUp:[0,-3],ArrowDown:[0,3]}[e.key];
