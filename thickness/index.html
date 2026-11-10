@@ -1316,18 +1316,63 @@ function traceLens(img, box){
   lastTrace = { cv, cx, cy, hw, hh };
   return { pts, quality, corners: polyFit ? polyFit.corners : 0, aspect:(x1 - x0) / (y1 - y0), preview:pv.toDataURL('image/jpeg', 0.85) };
 }
+
+/* Offline lens locator: the user drags a box around ONE lens (finger or mouse); returns normalised {x0,y0,x1,y1}. */
+function pickBox(img){
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px;touch-action:none';
+    const tip = document.createElement('div');
+    tip.style.cssText = 'color:#d9f99d;font-weight:700;font-size:15px;text-align:center;direction:rtl';
+    tip.textContent = 'اسحب بصباعك مربع حوالين عدسة واحدة (مع الإطار)';
+    const wrap = document.createElement('div'); wrap.style.cssText = 'position:relative;max-width:100%;max-height:72vh;line-height:0';
+    const cv = document.createElement('canvas'); cv.width = img.cv.width; cv.height = img.cv.height;
+    cv.style.cssText = 'max-width:94vw;max-height:72vh;border:1px solid #a3e63566;border-radius:6px;touch-action:none';
+    const ctx = cv.getContext('2d');
+    wrap.appendChild(cv);
+    const bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:12px;direction:rtl';
+    const mk = (t, bg) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = `padding:10px 22px;border-radius:8px;border:1px solid #a3e635;background:${bg};color:#ecfccb;font-weight:700;font-size:15px`; return b; };
+    const ok = mk('✓ تمام', '#365314'), cancel = mk('✕ إلغاء', '#1f2937'), redo = mk('↺ من الأول', '#1f2937');
+    ok.disabled = true; ok.style.opacity = .4;
+    bar.append(ok, redo, cancel); ov.append(tip, wrap, bar); document.body.appendChild(ov);
+    let a = null, b = null, drag = false;
+    const draw = () => {
+      ctx.drawImage(img.cv, 0, 0);
+      if (a && b){
+        const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y), w = Math.abs(a.x - b.x), h = Math.abs(a.y - b.y);
+        ctx.fillStyle = '#0008'; ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img.cv, x, y, w, h, x, y, w, h);
+        ctx.strokeStyle = '#a3e635'; ctx.lineWidth = Math.max(2, cv.width / 300); ctx.strokeRect(x, y, w, h);
+      }
+    };
+    const pos = e => { const r = cv.getBoundingClientRect(); return { x:(e.clientX - r.left) * cv.width / r.width, y:(e.clientY - r.top) * cv.height / r.height }; };
+    cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); a = b = pos(e); drag = true; draw(); });
+    cv.addEventListener('pointermove', e => { if (!drag) return; b = pos(e); draw(); });
+    cv.addEventListener('pointerup', () => { drag = false; const good = a && b && Math.abs(a.x - b.x) > cv.width * .05 && Math.abs(a.y - b.y) > cv.height * .03; ok.disabled = !good; ok.style.opacity = good ? 1 : .4; });
+    const close = v => { ov.remove(); resolve(v); };
+    cancel.onclick = () => close(null);
+    redo.onclick = () => { a = b = null; ok.disabled = true; ok.style.opacity = .4; draw(); };
+    ok.onclick = () => close({ x0:Math.min(a.x, b.x) / cv.width, y0:Math.min(a.y, b.y) / cv.height, x1:Math.max(a.x, b.x) / cv.width, y1:Math.max(a.y, b.y) / cv.height });
+    draw();
+  });
+}
 async function traceFrame(file){
   if (!file) return;
   const note = $('shNote');
   const sample = await samplePromise;
-  if (!sample){ note.textContent = 'قراءة شكل الفريم من الصورة متاحة في نسخة Claude بس — استخدم ✏️ التعديل اليدوي'; return; }
   try{
-    const lim = typeof sample.limits === 'function' ? await sample.limits() : { images:true };
-    if (!lim || !lim.images){ note.textContent = 'قراءة الصور مش متاحة دلوقتي'; return; }
-    note.textContent = '🤖 بحدد مكان العدسة…';
+    const lim = sample ? (typeof sample.limits === 'function' ? await sample.limits() : { images:true }) : null;
     const img = await loadImageData(file);
-    const blob = await new Promise(r => img.cv.toBlob(r, 'image/jpeg', 0.88));
-    const box = await sample.json(FRAME_PROMPT, { images:[blob], modelTier:'complex' });
+    let box;
+    if (lim && lim.images){
+      note.textContent = '🤖 بحدد مكان العدسة…';
+      const blob = await new Promise(r => img.cv.toBlob(r, 'image/jpeg', 0.88));
+      box = await sample.json(FRAME_PROMPT, { images:[blob], modelTier:'complex' });
+    } else {
+      note.textContent = '👆 حدد العدسة اليمين بمربع على الصورة';
+      box = await pickBox(img);
+      if (!box){ note.textContent = 'اتلغى التحديد'; return; }
+    }
     const ok = box && [box.x0, box.y0, box.x1, box.y1].every(v => isFinite(+v) && +v >= 0 && +v <= 1) && Math.abs(box.x1 - box.x0) > 0.05 && Math.abs(box.y1 - box.y0) > 0.03;
     if (!ok) throw new Error('bad box');
     note.textContent = '✏️ بتتبع حافة الإطار…';
