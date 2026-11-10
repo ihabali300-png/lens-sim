@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>محاكي مجالات البروجرسيف</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1430">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -37,8 +41,14 @@ body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
 #fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:center}
 body.fs #fsbar{display:flex}
+#fsSel{display:none;position:absolute;top:8px;left:0;right:0;direction:ltr}
+body.fs.split #fsSel{display:flex}
+#fsSel select{position:absolute;top:0;width:min(44%,300px);flex:none;background:rgba(240,195,106,.95);color:#231a04;font-weight:700;border-color:transparent;direction:rtl}
+#selA{left:25%;transform:translateX(-50%)}#selB{left:75%;transform:translateX(-50%)}
+body.fs.split #fsName,body.fs.split #fsUp,body.fs.split #fsDown,body.fs.split #hint{display:none}
 body.fs #hint{bottom:auto;top:10px}
 #fsbar button{background:rgba(13,20,48,.78);border-color:rgba(255,255,255,.25);padding:6px 12px}
+#fsbar button[aria-pressed="true"]{background:var(--accent);color:#231a04}
 #fsName{background:var(--accent);color:#231a04;font-weight:700;border-radius:10px;padding:6px 14px;white-space:nowrap}
 #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(13,20,48,.78);border-radius:20px;padding:4px 14px;font-size:13px;pointer-events:none;white-space:nowrap}
 .big{width:100%;padding:11px;font-weight:700;font-size:16px;background:var(--accent);color:#231a04;border-color:var(--accent)}
@@ -75,6 +85,7 @@ details output{color:var(--accent);font-weight:700}
 
 <div id="wrap">
   <canvas id="cv" aria-label="منظر من خلال العدسة، اسحب لتحريك العدسة"></canvas>
+  <div id="fsSel"><select id="selA" aria-label="العدسة الشمال"></select><select id="selB" aria-label="العدسة اليمين"></select></div>
   <div id="fsbar">
     <button id="fsDown">عدسة أقل</button>
     <div id="fsName"></div>
@@ -266,8 +277,8 @@ function paintScene(){
 const wrap=$('wrap'),cv=$('cv'),ctx=cv.getContext('2d');
 let cw=0,ch=0,sc=1,ox=0,oy=0,dpr=1,rot=false,nativeFs=false;
 const i1=m1.getContext('2d').createImageData(GX,GY),i2=m2.getContext('2d').createImageData(GX,GY);
-function computeMasks(){
-  const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA,d1=i1.data,d2=i2.data;
+function computeMasks(TA,TB){
+  const d1=i1.data,d2=i2.data;
   for(let j=0;j<GY;j++){const v=(j+.5)/GY*90,yc=-(v-S.gy)/K,y=yc-3,ey=Math.pow(Math.abs(yc)/18,NP);
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*160,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
@@ -349,9 +360,9 @@ function zlabel(c,str,x,y){
   c.font='700 2.6px "IBM Plex Sans Arabic",Tahoma,sans-serif';c.textAlign='center';c.textBaseline='middle';c.direction='rtl';
   c.lineWidth=.6;c.strokeStyle='rgba(0,0,0,.55)';c.strokeText(str,x,y);c.fillStyle='rgba(255,255,255,.95)';c.fillText(str,x,y);
 }
-function draw(){
-  if(!cw) return;
-  computeMasks();
+function drawPanel(x0,w,TA,TB,split){
+  sc=Math.max(w/160,ch/90);ox=x0+(w-160*sc)/2;oy=(ch-90*sc)*.65;PANELS.push({x0,w,ox,oy,sc});
+  computeMasks(TA,TB);
   if(comp.width!==cv.width||comp.height!==cv.height){comp.width=cv.width;comp.height=cv.height}
   const q=comp.getContext('2d');q.setTransform(dpr,0,0,dpr,0,0);q.imageSmoothingEnabled=true;q.imageSmoothingQuality='high';
   const dw=160*sc,dh=90*sc;
@@ -362,7 +373,8 @@ function draw(){
     t.globalCompositeOperation='destination-in';t.drawImage(m,0,0,640,360);
     q.drawImage(tmp,ox,oy,dw,dh);
   });
-  ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(comp,0,0);
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();
+  ctx.drawImage(comp,0,0);
   /* inside the lens: prescription magnification / minification and cylinder stretch */
   const [mA,mP]=magXY(),cx=(ox+S.gx*sc)*dpr,cy=(oy+S.gy*sc)*dpr,ax=-S.axis*Math.PI/180;
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.translate(ox,oy);ctx.scale(sc,sc);ctx.beginPath();lensPoly(ctx);ctx.clip();
@@ -371,9 +383,8 @@ function draw(){
   ctx.restore();
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.translate(ox,oy);ctx.scale(sc,sc);
   ctx.beginPath();ctx.rect(-20,-20,200,130);lensPoly(ctx);ctx.fillStyle='rgba(8,12,30,.26)';ctx.fill('evenodd');
-  const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.save();ctx.beginPath();lensPoly(ctx);ctx.clip();
-  const Z=S.zones,offs=S.cmp>=0?[-11,11]:[0];
+  const Z=S.zones,offs=TA!==TB?[-11,11]:[0];
   if(Z.far){zoneFill(ctx,TA,TB,0,30,'rgba(90,170,255,.17)');offs.forEach(o=>zlabel(ctx,'بعيد',S.gx+o,S.gy-9*K))}
   if(Z.mid){zoneFill(ctx,TA,TB,-L,0,'rgba(80,220,150,.19)');offs.forEach(o=>zlabel(ctx,'متوسط',S.gx+o*.6,S.gy-(3-L*.5)*K))}
   if(Z.near){zoneFill(ctx,TA,TB,-30,-L,'rgba(255,190,80,.19)');offs.forEach(o=>zlabel(ctx,'قريب',S.gx+o*.6,S.gy-(3-L-3.5)*K))}
@@ -384,7 +395,7 @@ function draw(){
     ctx.setLineDash([1.6,1.1]);ctx.lineWidth=.42;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.stroke();
   });
   ctx.setLineDash([]);
-  if(S.cmp>=0){
+  if(TA!==TB){
     ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(S.gx,S.gy-40);ctx.lineTo(S.gx,S.gy+40);ctx.stroke();
     pill(LENSES[S.i].ar,S.gx-20,S.gy-18*K+7);pill(LENSES[S.cmp].ar,S.gx+20,S.gy-18*K+7);
   }
@@ -392,6 +403,19 @@ function draw(){
   ctx.beginPath();lensPoly(ctx);ctx.lineWidth=2.4;ctx.strokeStyle='#12151d';ctx.stroke();
   ctx.lineWidth=.45;ctx.strokeStyle='rgba(255,255,255,.4)';ctx.stroke();
   ctx.restore();
+  ctx.restore();
+}
+let PANELS=[];
+const isSplit=()=>document.body.classList.contains('fs')&&S.cmpOn&&S.cmp>=0;
+function draw(){
+  if(!cw) return;
+  PANELS=[];
+  const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  if(isSplit()){
+    const h=cw/2;drawPanel(0,h,TA,TA);drawPanel(h,h,TB,TB);
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);
+  } else drawPanel(0,cw,TA,TB);
 }
 function layout(){
   const fs=document.body.classList.contains('fs'),st=wrap.style;
@@ -420,6 +444,7 @@ function render(){
   $('mField').style.width=T.field+'%';$('mAdapt').style.width=T.adapt+'%';
   $('iBen').innerHTML=T.ben.map(b=>`<li>${b}</li>`).join('');
   $('fsName').textContent=full(T)+' · '+desOf(T).ar;
+  if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
   $('rxLine').textContent='المقاس: '+sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'° · إضافة +'+S.add.toFixed(2);
@@ -454,19 +479,30 @@ $('fsZ').addEventListener('click',allZ);$('zAll').addEventListener('click',allZ)
 function zoneAt(e){
   const r=cv.getBoundingClientRect();let x,y;
   if(rot){x=e.clientY-r.top;y=r.right-e.clientX}else{x=e.clientX-r.left;y=e.clientY-r.top}
-  const u=(x-ox)/sc,v=(y-oy)/sc;
+  const P=PANELS.find(q=>x>=q.x0&&x<q.x0+q.w)||PANELS[0];if(!P)return null;
+  const u=(x-P.ox)/P.sc,v=(y-P.oy)/P.sc;
   if(Math.pow(Math.abs(u-S.gx)/(26*K),NP)+Math.pow(Math.abs(v-S.gy)/(18*K),NP)>1)return null;
   const yl=-(v-S.gy)/K-3;return yl>=0?'far':yl>-L?'mid':'near';
 }
 $('fsUp').addEventListener('click',()=>pick(S.i+1));
 $('fsDown').addEventListener('click',()=>pick(S.i-1));
+function lensOpts(){return BRANDS.map((b,k)=>'<optgroup label="'+b.ar+'">'+LENSES.map((t,i)=>t.b===k?'<option value="'+i+'">'+full(t)+' · '+t.pr+' ريال</option>':'').join('')+'</optgroup>').join('')}
+$('selA').innerHTML=lensOpts();$('selB').innerHTML=lensOpts();
+$('selA').addEventListener('change',e=>{const i=+e.target.value;if(i===S.cmp)S.cmp=S.i;S.i=i;S.vb=LENSES[i].b;render()});
+$('selB').addEventListener('change',e=>{const i=+e.target.value;if(i===S.i)S.i=S.cmp;S.cmp=i;render()});
+function syncSplit(){
+  document.body.classList.toggle('split',isSplit());
+  $('selA').value=S.i;if(S.cmp>=0)$('selB').value=S.cmp;
+}
 function enterFs(){
-  document.body.classList.add('fs');layout();
-  try{const el=document.documentElement,p=el.requestFullscreen&&el.requestFullscreen();
+  if(S.cmpOn&&S.cmp<0)S.cmp=S.i<LENSES.length-1?S.i+1:S.i-1;
+  document.body.classList.add('fs');syncSplit();layout();
+  const app=window.matchMedia&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches);
+  if(!app)try{const el=document.documentElement,p=el.requestFullscreen&&el.requestFullscreen();
     if(p&&p.then)p.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{})}catch(_){}}).catch(()=>{})}catch(_){}
 }
 function exitFs(){
-  document.body.classList.remove('fs');
+  document.body.classList.remove('fs','split');
   try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(_){}
   layout();
 }
@@ -474,7 +510,7 @@ $('fsGo').addEventListener('click',enterFs);
 $('fsExit').addEventListener('click',exitFs);
 document.addEventListener('fullscreenchange',()=>{
   if(document.fullscreenElement)nativeFs=true;
-  else if(nativeFs){nativeFs=false;document.body.classList.remove('fs')}
+  else if(nativeFs){nativeFs=false;document.body.classList.remove('fs','split')}
   layout();
 });
 let drag=null;
