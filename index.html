@@ -190,7 +190,7 @@ const LENSES=[
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
 const S={zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
-const K=1.7,L=14,M=2.2,NP=3.2,GX=96,GY=54;
+let K=1.6;const L=14,M=2.2,NP=3.2,GX=96,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const ss=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
@@ -444,6 +444,7 @@ function draw(){
   PANELS=[];
   const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  K=isSplit()?1.38:1.6;
   if(isSplit()){
     const h=cw/2;drawPanel(0,h,TA,TA);drawPanel(h,h,TB,TB);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);

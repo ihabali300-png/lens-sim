@@ -3,7 +3,7 @@
   "short_name": "IHAB Progressive",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#0d1430",
   "theme_color": "#0d1430",
