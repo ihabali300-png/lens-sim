@@ -299,7 +299,17 @@ $('live').addEventListener('click',async()=>{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
     vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.srcObject=stream;await vid.play();
     SRC='live';loop();
-  }catch(e){stopLive();msg('الكاميرا المباشرة مقفولة جوه الصفحة دي. استخدم زرار "صوّر المكان": بيفتح الكاميرا، تصوّر اللي قدامك، والعدسة تشتغل على الصورة.')}
+  }catch(e){stopLive();
+    const n=e&&e.name||'', inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
+    let t;
+    if(inFrame) t='الصفحة مفتوحة جوه Claude، وClaude بيقفل الكاميرا. افتح رابط GitHub من Chrome: ihabali300-png.github.io/lens-sim';
+    else if(!window.isSecureContext||!navigator.mediaDevices) t='المتصفح ده مش بيسمح بالكاميرا. افتح الرابط من Chrome، ولازم يبدأ بـ https.';
+    else if(n==='NotAllowedError') t='إذن الكاميرا مرفوض. دوس على القفل 🔒 جنب الرابط فوق ⬅️ الأذونات ⬅️ الكاميرا ⬅️ سماح، وبعدين اعمل تحديث للصفحة.';
+    else if(n==='NotFoundError'||n==='OverconstrainedError') t='مش لاقي كاميرا على الجهاز ده.';
+    else if(n==='NotReadableError') t='الكاميرا شغالة في تطبيق تاني. اقفله وجرّب تاني.';
+    else t='الكاميرا ما اشتغلتش (الخطأ: '+(n||'غير معروف')+'). ابعت الرسالة دي لـ Claude.';
+    msg(t+' ولحد ما تتحل، زرار "صوّر المكان" شغال.');
+  }
 });
 $('photo').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];if(!f)return;
