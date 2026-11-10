@@ -2,6 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IHAB Progressive Simulator</title>
 <link rel="manifest" href="manifest.json">
@@ -103,7 +106,6 @@ details output{color:var(--accent);font-weight:700}
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
-    <button id="fsNative" aria-label="إخفاء شريط المتصفح">⛶</button>
     <button id="fsExit">خروج</button>
   </div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
@@ -156,7 +158,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 18 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -550,13 +552,7 @@ try{if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self==
 window.addEventListener('appinstalled',()=>{$('inst').hidden=true});
 $('fsExit').addEventListener('click',exitFs);
 const isApp=()=>window.matchMedia&&(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches);
-if(isApp())$('fsNative').hidden=true;
-$('fsNative').addEventListener('click',()=>{
-  try{const el=document.documentElement;
-    if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});return}
-    const p=el.requestFullscreen&&el.requestFullscreen();
-    if(p&&p.then)p.then(()=>{try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{})}catch(_){}}).catch(()=>{})}catch(_){}
-});
+try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(_){}
 document.addEventListener('fullscreenchange',()=>{
   if(document.fullscreenElement)nativeFs=true;
   else if(nativeFs){nativeFs=false;document.body.classList.remove('fs','split')}
