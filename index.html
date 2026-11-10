@@ -198,13 +198,12 @@ function halfW(T,y){
   const a=S.add,f=rxNarrow(T);
   return f*halfW0(T,y,a);
 }
+const sig=z=>1/(1+Math.exp(-z)),spl=z=>z>20?z:Math.log1p(Math.exp(z));
 function halfW0(T,y,a){
   const wC=1.3*M*T.cf*L/(4*a), wN=M*T.nf*14/(a+.5), wD=M*T.df*28/(a+.5);
-  if(y>=0) return wD+y*(2+T.df*2.5);
-  const t=-y/L;
-  if(t<.45) return lerp(wD,wC,ss(t/.45));
-  if(t<1) return lerp(wC,wN,ss((t-.45)/.55));
-  return wN+(t-1)*L*.12;
+  /* smooth hourglass: wide far zone, narrow corridor, near zone opening below */
+  return wC+(wD-wC)*sig((y+.28*L)/(.11*L))+(wN-wC)*sig((-y-.9*L)/(.11*L))
+    +(1.2+T.df*1.6)*2*spl(y/2)+.5*spl((-y-L)/2.5);
 }
 
 /* ---------- scene ---------- */
@@ -353,17 +352,33 @@ function magXY(){
   return [m(S.sph),m(S.sph+S.cyl)];
 }
 function edgePath(c,T,side,y0,y1){
-  const n=28;
+  const n=70;
   for(let j=0;j<=n;j++){const y=y0+(y1-y0)*j/n,u=S.gx+side*halfW(T,y)*K,v=S.gy-(y+3)*K;j?c.lineTo(u,v):c.moveTo(u,v)}
 }
-function zoneFill(c,TA,TB,y0,y1,col){
-  c.beginPath();edgePath(c,TB,1,y1,y0);
-  const n=28;for(let j=0;j<=n;j++){const y=y0+(y1-y0)*j/n;c.lineTo(S.gx-halfW(TA,y)*K,S.gy-(y+3)*K)}
-  c.closePath();c.fillStyle=col;c.fill();
+const ZF=()=>-.2*L, ZN=()=>-.9*L;
+function clearPath(c,TA,TB){
+  c.beginPath();edgePath(c,TB,1,30,-30);
+  const n=70;for(let j=0;j<=n;j++){const y=-30+60*j/n;c.lineTo(S.gx-halfW(TA,y)*K,S.gy-(y+3)*K)}
+  c.closePath();
 }
-function zlabel(c,str,x,y){
-  c.font='700 2.6px "IBM Plex Sans Arabic",Tahoma,sans-serif';c.textAlign='center';c.textBaseline='middle';c.direction='rtl';
-  c.lineWidth=.6;c.strokeStyle='rgba(0,0,0,.55)';c.strokeText(str,x,y);c.fillStyle='rgba(255,255,255,.95)';c.fillText(str,x,y);
+/* soft zone tint: vertical band inside the clear region, edges feathered */
+function zoneFill(c,TA,TB,yTop,yBot,rgb){
+  const vy=y=>S.gy-(y+3)*K, f=2.2;
+  c.save();clearPath(c,TA,TB);c.clip();
+  const v0=vy(yTop+f),v1=vy(yBot-f),g=c.createLinearGradient(0,v0,0,v1),t=(2*f*K)/(v1-v0);
+  g.addColorStop(0,`rgba(${rgb},0)`);g.addColorStop(clamp(t,0,.5),`rgba(${rgb},.24)`);
+  g.addColorStop(clamp(1-t,.5,1),`rgba(${rgb},.24)`);g.addColorStop(1,`rgba(${rgb},0)`);
+  c.fillStyle=g;c.fillRect(S.gx-60,v0,120,v1-v0);
+  c.restore();
+}
+function zlabel(c,icon,str,sub,x,y){
+  c.save();c.textAlign='center';c.textBaseline='middle';c.direction='rtl';
+  c.font='700 2.5px "IBM Plex Sans Arabic",Tahoma,sans-serif';
+  const t=icon+' '+str,w=Math.max(c.measureText(t).width,(c.font='500 1.7px "IBM Plex Sans Arabic",Tahoma,sans-serif',c.measureText(sub).width))+3.2;
+  c.fillStyle='rgba(10,16,40,.62)';c.beginPath();c.roundRect?c.roundRect(x-w/2,y-2.9,w,5.8,2.2):c.rect(x-w/2,y-2.9,w,5.8);c.fill();
+  c.fillStyle='#fff';c.font='700 2.5px "IBM Plex Sans Arabic",Tahoma,sans-serif';c.fillText(t,x,y-.9);
+  c.fillStyle='rgba(220,232,255,.9)';c.font='500 1.7px "IBM Plex Sans Arabic",Tahoma,sans-serif';c.fillText(sub,x,y+1.5);
+  c.restore();
 }
 function drawPanel(x0,w,TA,TB,split){
   sc=Math.max(w/160,ch/90);ox=x0+(w-160*sc)/2;oy=(ch-90*sc)*.65;PANELS.push({x0,w,ox,oy,sc});
@@ -390,9 +405,12 @@ function drawPanel(x0,w,TA,TB,split){
   ctx.beginPath();ctx.rect(-20,-20,200,130);lensPoly(ctx);ctx.fillStyle='rgba(8,12,30,.26)';ctx.fill('evenodd');
   ctx.save();ctx.beginPath();lensPoly(ctx);ctx.clip();
   const Z=S.zones,offs=TA!==TB?[-11,11]:[0];
-  if(Z.far){zoneFill(ctx,TA,TB,0,30,'rgba(90,170,255,.17)');offs.forEach(o=>zlabel(ctx,'بعيد',S.gx+o,S.gy-9*K))}
-  if(Z.mid){zoneFill(ctx,TA,TB,-L,0,'rgba(80,220,150,.19)');offs.forEach(o=>zlabel(ctx,'متوسط',S.gx+o*.6,S.gy-(3-L*.5)*K))}
-  if(Z.near){zoneFill(ctx,TA,TB,-30,-L,'rgba(255,190,80,.19)');offs.forEach(o=>zlabel(ctx,'قريب',S.gx+o*.6,S.gy-(3-L-3.5)*K))}
+  const vy=y=>S.gy-(y+3)*K;
+  if(Z.far){zoneFill(ctx,TA,TB,30,ZF(),'110,180,255');offs.forEach(o=>zlabel(ctx,'🚗','بعيد','أكتر من 2 متر',S.gx+o,vy(7)))}
+  if(Z.mid){zoneFill(ctx,TA,TB,ZF(),ZN(),'90,225,160');offs.forEach(o=>zlabel(ctx,'💻','متوسط','من 60 سم لمتر',S.gx+o*.5,vy(-.55*L)))}
+  if(Z.near){zoneFill(ctx,TA,TB,ZN(),-30,'255,195,90');offs.forEach(o=>zlabel(ctx,'📖','قريب','من 35 لـ 40 سم',S.gx+o*.5,vy(-L-3.2)))}
+  if(Z.far||Z.mid||Z.near){ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=.3;const fx=S.gx,fy=vy(0);
+    ctx.beginPath();ctx.moveTo(fx-2,fy);ctx.lineTo(fx+2,fy);ctx.moveTo(fx,fy-2);ctx.lineTo(fx,fy+2);ctx.stroke()}
   /* clear-zone boundary */
   [[TA,-1],[TB,1]].forEach(([T,sd])=>{
     ctx.beginPath();edgePath(ctx,T,sd,24,-30);
@@ -487,7 +505,7 @@ function zoneAt(e){
   const P=PANELS.find(q=>x>=q.x0&&x<q.x0+q.w)||PANELS[0];if(!P)return null;
   const u=(x-P.ox)/P.sc,v=(y-P.oy)/P.sc;
   if(Math.pow(Math.abs(u-S.gx)/(26*K),NP)+Math.pow(Math.abs(v-S.gy)/(18*K),NP)>1)return null;
-  const yl=-(v-S.gy)/K-3;return yl>=0?'far':yl>-L?'mid':'near';
+  const yl=-(v-S.gy)/K-3;return yl>=ZF()?'far':yl>ZN()?'mid':'near';
 }
 $('fsUp').addEventListener('click',()=>pick(cyc(S.i,1)));
 $('fsDown').addEventListener('click',()=>pick(cyc(S.i,-1)));
