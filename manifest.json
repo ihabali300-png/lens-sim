@@ -1,6 +1,6 @@
 {
-  "name": "محاكي البروجرسيف",
-  "short_name": "محاكي العدسات",
+  "name": "IHAB Progressive Simulator",
+  "short_name": "IHAB Progressive",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
@@ -9,5 +9,12 @@
   "theme_color": "#0d1430",
   "lang": "ar",
   "dir": "rtl",
-  "icons": [{"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
