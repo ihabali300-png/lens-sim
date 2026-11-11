@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IHAB Progressive Simulator</title>
+<title>IHAB Vision Lab</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d1430">
 <meta name="mobile-web-app-capable" content="yes">
@@ -171,7 +171,7 @@ body.fs.split .peek{display:none}
 <body>
 <div id="home">
   <div class="hbox">
-    <p class="hsub">IHAB Progressive Simulator</p>
+    <p class="hsub">IHAB Vision Lab</p>
     <h1>اختار نوع العدسة</h1>
     <button data-m="sv" class="hb"><span>👓</span><b>سنجل فيجن</b><small>عدسة لمسافة واحدة: بعيد أو قريب</small></button>
     <button data-m="pal" class="hb"><span>🔭</span><b>بروجرسيف</b><small>عدسة واحدة للبعيد والمتوسط والقريب</small></button>
@@ -223,7 +223,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v61</div>
+  <div id="ver">v62</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -302,7 +302,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 61 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 62 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1086,7 +1086,7 @@ function cardPNG(T){
   T.tech.forEach(([n,b])=>{x.font='700 32px '+F;const w=x.measureText(n).width;T_(n,W-P,y,32,'#7fd8ff',700);T_(b,W-P-w-24,y,30,'#f1f4fc',500);y+=64});
   if(T.lux){y+=10;R(P,y,W-2*P,120,22,'rgba(240,195,106,.18)');x.strokeStyle='rgba(240,195,106,.7)';x.lineWidth=3;x.stroke();T_(T.lux.t,W-P-24,y+38,34,'#f0c36a',700,FD);T_(T.lux.l.join(' · '),W-P-24,y+86,28,'#f1f4fc',500);y+=140}
   if(rx){T_('المقاس:',W-P,y+10,30,'#a4b0d6',600);x.direction='ltr';T_(rx,P,y+10,30,'#fff',700,F,'left');x.direction='rtl';y+=60}
-  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(0,H-70,W,70);T_('IHAB Progressive Simulator',W/2,H-35,24,'#a4b0d6',500,F,'center');
+  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(0,H-70,W,70);T_('IHAB Vision Lab',W/2,H-35,24,'#a4b0d6',500,F,'center');
   return c;
 }
 let cardBlob=null;
@@ -1158,7 +1158,7 @@ function cmpPNG(A,B){
   y+=10;T_('⚙️ التقنيات',W/2,y+10,32,'#f0c36a',700,FD);y+=60;
   for(let k=0;k<nt;k++){[[A,cA,colA],[B,cB,colB]].forEach(([T,cx,col])=>{const t=T.tech[k];if(t)T_('✓ '+t[0]+': '+t[1],cx,y,23,'#f1f4fc',500)});y+=54}
   if(A.lux||B.lux){[[A,cA],[B,cB]].forEach(([T,cx])=>{if(T.lux){R(cx-240,y,480,60,16,'rgba(240,195,106,.18)');T_(T.lux.t,cx,y+30,28,'#f0c36a',700,FD)}});y+=80}
-  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(0,H-70,W,70);T_('IHAB Progressive Simulator',W/2,H-35,24,'#a4b0d6',500);
+  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(0,H-70,W,70);T_('IHAB Vision Lab',W/2,H-35,24,'#a4b0d6',500);
   return c;
 }
 let cmpBlob=null;
@@ -1306,7 +1306,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=61;
+const VER=62;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>

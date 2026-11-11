@@ -1,6 +1,6 @@
 {
-  "name": "IHAB Progressive Simulator",
-  "short_name": "IHAB Progressive",
+  "name": "IHAB Vision Lab",
+  "short_name": "IHAB Vision Lab",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
