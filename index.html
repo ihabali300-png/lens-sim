@@ -85,7 +85,8 @@ details output{color:var(--accent);font-weight:700}
 #fsRx{display:none;position:absolute;right:8px;top:8px;z-index:4;flex-direction:column;gap:6px;direction:ltr}
 body.fs.rx #fsRx{display:grid;grid-template-columns:auto auto;grid-auto-rows:auto;gap:5px;align-items:center}
 #fsRx .wr{grid-column:2}
-#fsRx .wr:last-child{grid-column:1;grid-row:1/4}
+#fsRx .wr:nth-child(4){grid-column:1;grid-row:1/4}
+#dx{grid-column:1/3;background:rgba(240,195,106,.92);color:#231a04;font-weight:700;font-size:12px;border-radius:9px;padding:3px 8px;text-align:center;direction:rtl}
 #fsRx .wr{display:flex;align-items:center;gap:4px;background:rgba(60,66,80,.42);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:0 4px 0 8px;backdrop-filter:blur(2px)}
 #fsRx b{font-size:10.5px;color:#e8ecf4;width:30px;text-align:left}
 .wh{height:57px;width:56px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:19px 0;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);touch-action:pan-y;overscroll-behavior:contain}
@@ -215,8 +216,9 @@ body.fs.split .peek{display:none}
     <div class="wr"><b>CYL</b><div class="wh" id="wCyl"></div></div>
     <div class="wr"><b>A</b><div class="wh" id="wAx"></div></div>
     <div class="wr"><b>Index</b><div class="wh" id="wIdx"></div></div>
+    <div id="dx"></div>
   </div>
-  <div id="ver">v53</div>
+  <div id="ver">v54</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -295,7 +297,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 53 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 54 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -401,7 +403,7 @@ const full=T=>BRANDS[T.b].ar+' '+T.ar;
 const desOf=T=>DESIGNS[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d];
 function rxNarrow(T){
   const q=desOf(T).k, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
-  return 1/(1+q*(.06*Math.abs(S.sph)+.12*Math.abs(S.cyl)*(1+.5*ob)));
+  return 1/(1+q*(.06*Math.abs(S.sph)+.05*Math.abs(S.cyl)*(1+.5*ob)));
 }
 function halfW(T,y){
   const a=S.add,f=rxNarrow(T);
@@ -589,7 +591,9 @@ let i1=m1.getContext('2d').createImageData(GX,GY),i2=m2.getContext('2d').createI
 function computeMasks(TA,TB){
   const d1=i1.data,d2=i2.data;
   /* outside the lens = the customer's eye without glasses: blur grows with the prescription */
-  const uncor=clamp(Math.abs(S.sph)*.16+Math.abs(S.cyl)*.11,0,1);
+  /* naked eye: myopia blurs far more than near; hyperopia blurs near more (some accommodation assumed) */
+  const sph=S.sph+S.cyl/2;
+  const defo=q=>{const D=sph<0?Math.max(0,-sph-2.5*q):Math.max(0,sph+2.5*q-1.5)+sph*.35;return clamp(D*.3,0,1)};
   for(let j=0;j<GY;j++){const v=(j+.5)/GY*90,yc=-(v-S.gy)/K,y=yc-3,ey=Math.pow(Math.abs(yc)/18,NP);
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*SW,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
@@ -600,7 +604,7 @@ function computeMasks(TA,TB){
         /* single vision: edge blur comes from the prescription, so it is light at 0.00 and grows with power */
         const pw=Math.abs(S.sph)+Math.abs(S.cyl),svm=isSV()?(S.rxOn?Math.min(1,pw/4):.3+.7*Math.min(1,pw/4)):1;
         be=Math.max((SRC==='scene'||isSV()?ba:ba*1.4)*svm,bd);
-      } else be=S.rxOn?uncor:(SRC==='scene'?.3+.5*q:0);
+      } else be=S.rxOn?defo(SRC==='scene'?q:.35):(SRC==='scene'?.3+.5*q:0);
       d1[k+3]=255*clamp(be/.45,0,1);d2[k+3]=255*clamp((be-.45)/.55,0,1);
     }}
   m1.getContext('2d').putImageData(i1,0,0);m2.getContext('2d').putImageData(i2,0,0);
@@ -716,6 +720,13 @@ function drawPanel(x0,w,TA,TB,split){
   });
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();
   ctx.drawImage(comp,0,0);
+  if(S.rxOn&&S.cyl){ /* astigmatism: blur stretched along one direction at every distance, with a faint double image */
+    const a=S.axis*Math.PI/180,len=Math.abs(S.cyl)*2.2*sc*dpr,dx=Math.cos(a),dy=-Math.sin(a),n=Math.min(24,8+Math.round(len/3));
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();
+    for(let k=0;k<n;k++){const t=(k/(n-1)-.5)*len;ctx.globalAlpha=1/(k+1);ctx.drawImage(comp,dx*t,dy*t)}
+    ctx.globalAlpha=Math.min(.35,Math.abs(S.cyl)*.12);ctx.drawImage(comp,dx*len*.55,dy*len*.55);
+    ctx.restore();
+  }
   /* inside the lens: prescription magnification / minification and cylinder stretch */
   const [mA,mP]=magXY(),cx=(ox+S.gx*sc)*dpr,cy=(oy+S.gy*sc)*dpr,ax=-S.axis*Math.PI/180;
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.translate(ox,oy);ctx.scale(sc,sc);ctx.beginPath();lensPoly(ctx);ctx.clip();
@@ -869,7 +880,8 @@ $('rxOn').addEventListener('change',e=>{setTimeout(syncQ,50);S.rxOn=e.target.che
   render()});
 $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
-function syncQ(){document.body.classList.toggle('rx',S.rxOn);if(!WHEELS.wSph)return;WHEELS.wSph.set(S.sph);WHEELS.wCyl.set(S.cyl);WHEELS.wAx.set(S.axis);WHEELS.wIdx.set(S.idx)}
+function dxName(){const sp=S.sph,cy=S.cyl;if(!sp&&!cy)return '👁️ نظر سليم';if(!cy)return sp<0?'قصر نظر بسيط':'طول نظر بسيط';if(!sp)return 'استجماتيزم بسيط';if(sp>0&&sp+cy<0)return 'استجماتيزم مختلط';return sp<0?'قصر نظر مع استجماتيزم':'طول نظر مع استجماتيزم'}
+function syncQ(){if($('dx'))$('dx').textContent=dxName();document.body.classList.toggle('rx',S.rxOn);if(!WHEELS.wSph)return;WHEELS.wSph.set(S.sph);WHEELS.wCyl.set(S.cyl);WHEELS.wAx.set(S.axis);WHEELS.wIdx.set(S.idx)}
 /* ---------- wheel pickers for the quick prescription box ---------- */
 const WH_H=19,WHEELS={};
 function mkWheel(id,key,vals,fmt,after){
@@ -1242,7 +1254,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=53;
+const VER=54;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
