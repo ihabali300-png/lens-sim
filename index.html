@@ -110,7 +110,7 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v23</div>
+  <div id="ver">v24</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -161,7 +161,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 23 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 24 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -224,7 +224,7 @@ function halfW0(T,y,a){
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const sharp=mk(1600,900),bMid=mk(800,450),b1=mk(400,225),b2=mk(160,90),tmp=mk(640,360),m1=mk(GX,GY),m2=mk(GX,GY);
 let Q=new Float32Array(GX*GY);
-const FV0=10,FV1=87; /* visible scene rows in full screen */
+const FV0=13,FV1=85; /* visible scene rows in full screen */
 const DX=()=>SW/2-80; /* shift that keeps the desk objects centred when the scene is wider */
 function qAt(u,v){
   u-=DX();
@@ -329,7 +329,7 @@ function blurChain(){
 }
 function coverInto(el,w,h){
   const c=sharp.getContext('2d');c.setTransform(1,0,0,1,0,0);
-  const W=sharp.width,s=Math.max(W/w,900/h);c.drawImage(el,(W-w*s)/2,(900-h*s)/2,w*s,h*s);blurChain();
+  const W=sharp.width,s=Math.max(W/w,900/h)*(w>h?1.35:1); /* landscape camera frames get the same comfortable zoom as portrait ones */c.drawImage(el,(W-w*s)/2,(900-h*s)/2,w*s,h*s);blurChain();
 }
 function msg(t){const m=$('camMsg');m.textContent=t||'';m.hidden=!t}
 function stopLive(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
@@ -596,7 +596,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=23;
+const VER=24;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
