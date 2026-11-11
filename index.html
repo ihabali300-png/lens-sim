@@ -82,6 +82,14 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+.stars{display:grid;gap:4px;margin-top:10px}
+.srow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;background:var(--panel2);border-radius:10px;padding:6px 10px}
+.st{color:#ffc93c;font-size:17px;letter-spacing:1px;white-space:nowrap;direction:ltr}.st i{font-style:normal;color:rgba(255,255,255,.18)}
+.h3{font-family:var(--display);font-size:16px;margin:12px 0 0;color:var(--ink)}
+.lux{margin-top:12px;border-radius:14px;padding:10px 12px;background:linear-gradient(135deg,rgba(240,195,106,.22),rgba(127,216,255,.12));border:1px solid rgba(240,195,106,.55)}
+.lux h3{margin:0 0 6px;font-family:var(--display);font-size:17px;color:var(--accent)}
+.lux ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}.lux li::before{content:"✦ ";color:var(--accent)}
+#scn button[aria-pressed="true"],#live[aria-pressed="true"]{background:var(--accent);color:#231a04}
 #ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #inkbar{position:absolute;left:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:3}
 #inkbar button{width:40px;height:40px;padding:0;border-radius:50%;background:rgba(13,20,48,.8);border-color:rgba(255,255,255,.3);font-size:17px}
@@ -138,9 +146,10 @@ body.fs.split .peek{display:none}
     <button id="fsZ">مناطق الرؤية</button>
     <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
+    <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v28</div>
+  <div id="ver">v29</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -149,10 +158,14 @@ body.fs.split .peek{display:none}
   <button id="sumB" style="flex:1">📋 ملخص للعميل</button>
 </div>
 <button class="big" id="inst" hidden style="background:var(--panel2);color:var(--ink);border-color:var(--line)">📲 ثبّت المحاكي كتطبيق (ملء شاشة كامل)</button>
-<div class="grid3" style="grid-template-columns:repeat(3,1fr)">
-  <label class="camb" for="photo">📷 صوّر المكان<input type="file" id="photo" accept="image/*" capture="environment" hidden></label>
-  <button id="live">🎥 كاميرا مباشرة</button>
-  <button id="demo">🏙️ المنظر الجاهز</button>
+<div class="grid3" id="scn" aria-label="مشاهد جاهزة">
+  <button data-s="office" aria-pressed="true">💼 المكتب</button>
+  <button data-s="car" aria-pressed="false">🚗 السواقة</button>
+  <button data-s="home" aria-pressed="false">🏠 البيت</button>
+</div>
+<div class="seg">
+  <label class="camb" for="photo" style="flex:1">📷 صوّر المكان<input type="file" id="photo" accept="image/*" capture="environment" hidden></label>
+  <button id="live" style="flex:1" aria-pressed="false">🎥 كاميرا مباشرة</button>
 </div>
 <p class="sub" id="camMsg" hidden></p>
 
@@ -177,9 +190,10 @@ body.fs.split .peek{display:none}
   <h2 id="iName"></h2>
   <p class="sub" id="iTag"></p>
   <p class="des" id="iDes"></p>
-  <div class="meter"><span>اتساع مجال الرؤية</span><div class="track"><div class="fill" id="mField"></div></div></div>
-  <div class="meter"><span>سهولة التعوّد</span><div class="track"><div class="fill" id="mAdapt"></div></div></div>
+  <div class="stars" id="iStars"></div>
+  <h3 class="h3">أهم ما يميزها</h3>
   <ul class="ben" id="iBen"></ul>
+  <div class="lux" id="iLux" hidden></div>
 </section>
 
 <details>
@@ -195,7 +209,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 28 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 29 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="sum" hidden role="dialog" aria-modal="true" aria-labelledby="sumT">
@@ -229,6 +243,20 @@ const DESIGNS=[
  {ar:'فري فورم',en:'FreeForm',k:.5,bl:.55,ic:'🟣',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
 ];
 const B_ULT=B_ELI.concat(['أعلى فئة يابانية: أوسع مجال وأقل تشويش في كلاريفو']);
+const RATE_L=['وضوح البعيد','اتساع مجال الرؤية','نعومة الانتقال بين المسافات','راحة القراءة والشاشة','سهولة التعوّد'];
+const EXTRA=[
+ {r:[3,1,1,2,1],key:['رؤية للبعيد والمتوسط والقريب في عدسة واحدة','تصميم رقمي للاستخدام اليومي','طبقة مضادة للانعكاس']},
+ {r:[3,2,2,2,2],key:['مجال أوسع للقراءة والشاشة من بروتكتد','طبقة مضادة للانعكاس']},
+ {r:[4,2,2,3,2],key:['أوسع مجال في الفئة الكورية','طبقة مضادة للانعكاس ومقاومة للخدش']},
+ {r:[4,3,2,3,3],key:['صناعة يابانية','حماية من الضوء الأزرق','ضمان سنة']},
+ {r:[4,3,3,3,3],key:['تصميم أسفريك: عدسة أرفع وأخف','مقاومة عالية للبقع والخدوش وسهلة التنظيف','حماية من الضوء الأزرق','ضمان سنة']},
+ {r:[4,4,3,4,3],key:['أعلى فئة يابانية','أوسع مجال وأقل تشويش في كلاريفو','حماية من الضوء الأزرق','ضمان سنة']},
+ {r:[5,4,3,4,4],key:['صناعة ألمانية حصرية في eyewa','تقنية FieldMax: ثبات في الرؤية مع المشي والحركة','طبقة NanoClear Plus ضد الضباب والخدش','فلتر ClearBlue للضوء الأزرق','ضمان سنتين']},
+ {r:[5,4,5,5,4],key:['صناعة ألمانية حصرية في eyewa','تقنية PathVision: ممر أنعم وتمايل أقل','طبقة DiamondView بست طبقات','فلتر ClearBlue للضوء الأزرق','ضمان سنتين'],
+  lux:{t:'✨ رفاهية الرؤية',l:['انتقال ناعم بين البعيد والقريب من غير ما تحس','إحساس أقل بالدوخة والتمايل','ثبات مريح في القراءة والجوال والشاشة','مقاومة الضباب والبصمات في جو الخليج']}},
+ {r:[5,5,5,5,5],key:['صناعة ألمانية حصرية في eyewa','تصميم FreeForm محسوب نقطة بنقطة','تقنية NeoAdapt: العدسة بتتكيف مع عاداتك ووضعيتك','طبقة DiamondView بست طبقات','عدسة UltraSlim أنحف','ضمان سنتين'],
+  lux:{t:'👑 رفاهية الرؤية القصوى',l:['أوسع مجال رؤية في كل العدسات','أسرع تعوّد، والأنسب لأول مرة بروجرسيف','تركيز حاد فوري على أي مسافة','انتقال ناعم جداً من غير تمايل']}}
+];
 const LENSES=[
  {b:0,ar:'بروتكتد',en:'Protected',d:0,pr:599,cf:.80,nf:.66,df:.66,gk:.25,field:22,adapt:35,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
  {b:0,ar:'بريميوم',en:'Premium',d:0,pr:799,cf:.88,nf:.72,df:.74,gk:.235,field:28,adapt:40,tag:'راحة أكثر في القراءة والشاشة.',ben:B_PRM},
@@ -240,7 +268,8 @@ const LENSES=[
  {b:2,ar:'سيجنتشر',en:'Signature',d:2,pr:2600,cf:1.5,nf:1.18,df:1.24,gk:.15,field:82,adapt:86,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
-const S={pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
+LENSES.forEach((t,k)=>Object.assign(t,EXTRA[k]));
+const S={scene:'office',pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 let K=1.6,SW=160,GX=96;const L=14,M=2.2,NP=3.2,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -274,6 +303,18 @@ const FV0=10.5,FV1=83.5; /* visible scene rows in full screen */
 const DX=()=>SW/2-80; /* shift that keeps the desk objects centred when the scene is wider */
 function qAt(u,v){
   u-=DX();
+  if(S.scene==='car'){
+    if(v<56)return 0;
+    if(v>77&&u>55&&u<105)return 1;
+    if((u>60&&u<100&&v<75)||(u>17&&u<61&&v<79)||(u>110&&u<132))return .5;
+    return .5+.5*ss((v-68)/16);
+  }
+  if(S.scene==='home'){
+    if(v<44)return 0;
+    if(v>66)return 1;
+    if(u>58&&u<102&&v<66)return .5;
+    return .5+.5*ss((v-56)/14);
+  }
   if(u>44&&u<116&&v>68) return 1;
   if(u>120&&u<135&&v>64) return 1;
   if(u>50&&u<110&&v>33&&v<=68) return .5;
@@ -292,6 +333,7 @@ function paintScene(){
   const poly=(pts,col)=>{c.fillStyle=col;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill()};
   const rr=(x,y,w,h,rad,col)=>{c.fillStyle=col;c.beginPath();c.moveTo(x+rad,y);c.arcTo(x+w,y,x+w,y+h,rad);c.arcTo(x+w,y+h,x,y+h,rad);c.arcTo(x,y+h,x,y,rad);c.arcTo(x,y,x+w,y,rad);c.closePath();c.fill()};
   const txt=(s,x,y,h,col,wt,al)=>{c.fillStyle=col;c.font=`${wt||500} ${h}px "IBM Plex Sans Arabic",Tahoma,sans-serif`;c.textAlign=al||'right';c.textBaseline='middle';c.direction='rtl';c.fillText(s,x,y)};
+  if(S.scene==='car'||S.scene==='home'){(S.scene==='car'?paintCar:paintHome)(c,rect,poly,rr,txt,r);blurChain();return}
   /* far: sky and city */
   let g=c.createLinearGradient(0,0,0,56);g.addColorStop(0,'#6fadea');g.addColorStop(1,'#eaf3fa');rect(0,0,SW,56,g);
   g=c.createRadialGradient(SW-32,9,0,SW-32,9,26);g.addColorStop(0,'rgba(255,250,225,.95)');g.addColorStop(1,'rgba(255,250,225,0)');rect(SW-60,0,60,40,g);
@@ -339,6 +381,61 @@ function paintScene(){
   blurChain();
 }
 
+function paintCar(c,rect,poly,rr,txt,r){
+  const D=DX(),Wd=SW;
+  let g=c.createLinearGradient(0,0,0,42);g.addColorStop(0,'#24305e');g.addColorStop(.6,'#7a5a8c');g.addColorStop(1,'#f3a35b');rect(0,0,Wd,42,g);
+  for(let x=0;x<Wd;x+=2+r()*3){const h=1+r()*4;rect(x,40-h,1.2+r()*2,h,'#2a2438');if(r()>.5)rect(x+.4,40-h+.5,.4,.4,'#ffd98a')}
+  rect(0,40,Wd,20,'#3a3d44');
+  c.setTransform(10,0,0,10,10*D,0);
+  poly([[78,40],[82,40],[200,70],[-40,70]],'#55595f');
+  for(let k=0;k<6;k++){const t=k/6,t2=(k+.45)/6,y1=40+30*t*t,y2=40+30*t2*t2;poly([[80-.2-1.4*t,y1],[80+.2+1.4*t,y1],[80+.2+1.4*t2,y2],[80-.2-1.4*t2,y2]],'#f1f1ea')}
+  poly([[77.5,40],[78.3,40],[-30,70],[-38,70]],'#f4f4ec');poly([[81.7,40],[82.5,40],[198,70],[190,70]],'#f4f4ec');
+  rr(73,35,14,6.5,1,'#2b2f36');rect(73.6,38.2,2.6,1.4,'#ff3b30');rect(83.8,38.2,2.6,1.4,'#ff3b30');rect(78,38.6,4,1.2,'#e8e8e8');
+  rect(57,10,1,26,'#5c6168');rect(102,10,1,26,'#5c6168');
+  rr(52,6,56,17,1.4,'#1d7a46');c.strokeStyle='#fff';c.lineWidth=.35;c.strokeRect(53,7,54,15);
+  txt('تبوك  25 كم',104,11.5,3.2,'#fff',700);txt('المدينة المنورة  680 كم',104,17.5,2.6,'#fff',600);
+  c.setTransform(10,0,0,10,0,0);
+  poly([[0,0],[Wd*0.06,0],[Wd*0.16,60],[0,60]],'#14161b');poly([[Wd,0],[Wd*0.94,0],[Wd*0.84,60],[Wd,60]],'#14161b');
+  g=c.createLinearGradient(0,54,0,90);g.addColorStop(0,'#2a2d34');g.addColorStop(1,'#121318');
+  c.fillStyle=g;c.beginPath();c.moveTo(0,58);c.quadraticCurveTo(Wd/2,50,Wd,58);c.lineTo(Wd,90);c.lineTo(0,90);c.closePath();c.fill();
+  c.setTransform(10,0,0,10,10*D,0);
+  rr(62,57,36,17,1.6,'#0b0d12');rect(63,58,34,15,'#1c2a3d');
+  poly([[63,73],[74,63],[86,63],[97,73]],'#2c3d55');c.strokeStyle='#4fc3ff';c.lineWidth=.9;c.beginPath();c.moveTo(80,73);c.lineTo(80,66);c.lineTo(86,63.5);c.stroke();
+  rr(64,58.6,32,4.6,.8,'#1f7a46');txt('بعد 300 م انعطف يميناً',94.5,60.9,2.1,'#fff',700);txt('الوصول 10:42 · 18 كم',94.5,71.4,1.6,'#cfe3ff',500);
+  c.fillStyle='#0d0f14';c.beginPath();c.ellipse(39,69,21,10,0,0,7);c.fill();
+  [[30,'80'],[48,'2.4']].forEach(([x,t],k)=>{c.strokeStyle='#3d4250';c.lineWidth=.6;c.beginPath();c.arc(x,69,6.5,0,7);c.stroke();c.strokeStyle=k?'#ffb340':'#4fc3ff';c.lineWidth=.8;c.beginPath();c.arc(x,69,6.5,Math.PI*.8,Math.PI*(k?1.5:1.9));c.stroke();txt(t,x,69,3.2,'#fff',700,'center');txt(k?'آلاف لفة':'كم/س',x,73.2,1.3,'#aab2c5',500,'center')});
+  txt('⛽ 340 كم',39,62,1.6,'#9fe3a7',600,'center');
+  c.strokeStyle='#08090c';c.lineWidth=3.2;c.beginPath();c.arc(39,95,24,Math.PI*1.12,Math.PI*1.88);c.stroke();
+  rr(114,59,15,25,1.6,'#0c0d10');rect(115,61,13,21,'#eef2f7');rr(116,62.5,11,3,.8,'#25c466');txt('اتصال وارد',126.6,64,1.3,'#fff',700);txt('أحمد',126.6,69,1.8,'#222',700);rr(116.5,77,4.5,3,1.5,'#e5484d');rr(122,77,4.5,3,1.5,'#25c466');rect(119,84,5,6,'#2a2d34');
+  rr(56,77,48,12,1.2,'#1a1c22');[['A/C',60],['22°',70],['FM',80],['VOL',90],['⚠',98]].forEach(([t,x])=>{rr(x-4,79.5,8,6,1,'#2b2f38');txt(t,x,82.5,2,t==='⚠'?'#ff5a4e':'#dfe6f3',700,'center')});
+}
+function paintHome(c,rect,poly,rr,txt,r){
+  const D=DX(),Wd=SW;
+  let g=c.createLinearGradient(0,0,0,60);g.addColorStop(0,'#efe3cf');g.addColorStop(1,'#e2d3bb');rect(0,0,Wd,60,g);
+  c.strokeStyle='rgba(120,90,50,.08)';c.lineWidth=.4;for(let x=0;x<Wd;x+=8){c.beginPath();c.moveTo(x,0);c.lineTo(x,60);c.stroke()}
+  c.setTransform(10,0,0,10,10*D,0);
+  rr(4,8,30,36,1,'#fbf6ee');g=c.createLinearGradient(0,10,0,42);g.addColorStop(0,'#7fb8ec');g.addColorStop(1,'#d7ecfa');rect(6,10,26,32,g);
+  rect(6,30,26,12,'#b9a27e');for(let k=0;k<5;k++)rect(8+k*5,22+r()*6,3,20,'#c7b28e');rect(18.6,10,.8,32,'#fbf6ee');rect(6,25.6,26,.8,'#fbf6ee');
+  rr(52,8,56,32,1.4,'#0e0f13');g=c.createLinearGradient(0,10,0,38);g.addColorStop(0,'#173b6b');g.addColorStop(1,'#0e2647');rect(54,10,52,27.5,g);
+  rect(54,10,52,4.6,'#b3261e');txt('نشرة الأخبار',104,12.4,2.6,'#fff',700);txt('مباشر',58,12.4,1.8,'#fff',700,'left');
+  txt('الطقس في تبوك: مشمس 24°',104,20,2.6,'#fff',700);txt('افتتاح فرع جديد في المول',104,25,2,'#cfe3ff',500);
+  rect(54,33,52,4.5,'#f0c36a');txt('عاجل · تخفيضات على النظارات حتى نهاية الشهر',104,35.3,1.7,'#231a04',700);
+  rect(78,40,4,4,'#2a2b30');
+  c.fillStyle='#fff';c.beginPath();c.arc(132,22,8,0,7);c.fill();c.strokeStyle='#5b4a33';c.lineWidth=.8;c.stroke();
+  c.lineWidth=.5;for(let k=0;k<12;k++){const a=k*Math.PI/6;c.beginPath();c.moveTo(132+Math.cos(a)*6.6,22+Math.sin(a)*6.6);c.lineTo(132+Math.cos(a)*7.4,22+Math.sin(a)*7.4);c.stroke()}
+  c.lineWidth=.7;c.beginPath();c.moveTo(132,22);c.lineTo(132,17);c.moveTo(132,22);c.lineTo(136,24);c.stroke();
+  c.setTransform(10,0,0,10,0,0);
+  rect(0,56,Wd,4,'#8a6a45');g=c.createLinearGradient(0,60,0,90);g.addColorStop(0,'#a8794a');g.addColorStop(1,'#6e4b2a');rect(0,60,Wd,30,g);
+  c.setTransform(10,0,0,10,10*D,0);
+  poly([[64,66],[96,66],[94,47],[66,47]],'#1b1d22');rect(67,48.5,26,16,'#f5f7fb');rect(67,48.5,26,3,'#2d5fa8');txt('مكالمة فيديو',91.5,50,1.6,'#fff',700);
+  c.fillStyle='#e0b48c';c.beginPath();c.arc(80,57,4.5,0,7);c.fill();c.fillStyle='#4a3524';c.beginPath();c.arc(80,54.6,4.6,Math.PI,0);c.fill();rr(73,61.5,14,3,1.5,'#3f6fb5');
+  poly([[78,66],[82,66],[84,69],[76,69]],'#2a2c31');
+  poly([[40,72],[78,70],[80,92],[36,92]],'#f7f1e3');txt('جريدة اليوم',76,74,2.4,'#2a2418',700);
+  ['النظارة المناسبة تفرق','في القراءة والقيادة،','واختيار العدسة الصح','بيريح عينك طول اليوم.'].forEach((t,k)=>txt(t,76,78+k*3,1.7,'#3a3428'));
+  rr(118,68,12,22,1.5,'#15171c');rect(119,69.6,10,18.8,'#eef2f7');rr(120,71,8,3,.8,'#25c466');txt('العشا جاهز',127.6,72.5,1.25,'#fff',700);rr(120,75.2,8,3,.8,'#ffffff');txt('تمام جاي',127.6,76.7,1.25,'#222',600);
+  rr(98,73,10,9,1.4,'#f6f6f4');c.strokeStyle='#f6f6f4';c.lineWidth=1.2;c.beginPath();c.arc(108.6,77.5,2.4,-1.3,1.3);c.stroke();rect(99,73,8,1.4,'#6b4423');
+}
+
 /* ---------- render ---------- */
 const wrap=$('wrap'),cv=$('cv'),ctx=cv.getContext('2d');
 let cw=0,ch=0,sc=1,ox=0,oy=0,dpr=1,rot=false,nativeFs=false;
@@ -382,14 +479,14 @@ function coverInto(el,w,h,turn){
   blurChain();
 }
 function msg(t){const m=$('camMsg');m.textContent=t||'';m.hidden=!t}
-function stopLive(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
+function stopLive(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if(vid){try{vid.pause();vid.srcObject=null}catch(_){}vid=null}if(typeof syncSrc==='function')syncSrc()}
 function loop(){if(SRC!=='live')return;if(vid.readyState>=2)coverInto(vid,vid.videoWidth,vid.videoHeight,rot);draw();raf=requestAnimationFrame(loop)}
 $('live').addEventListener('click',async()=>{
   msg('');
   try{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
     vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.srcObject=stream;await vid.play();
-    SRC='live';loop();
+    SRC='live';syncSrc();loop();
   }catch(e){stopLive();
     const n=e&&e.name||'', inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
     let t;
@@ -404,11 +501,14 @@ $('live').addEventListener('click',async()=>{
 });
 $('photo').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];if(!f)return;
-  const img=new Image();img.onload=()=>{stopLive();SRC='photo';lastImg=img;coverInto(img,img.naturalWidth,img.naturalHeight);msg('');draw()};
+  const img=new Image();img.onload=()=>{stopLive();SRC='photo';syncSrc();lastImg=img;coverInto(img,img.naturalWidth,img.naturalHeight);msg('');draw()};
   img.onerror=()=>msg('الصورة دي مش راضية تفتح، جرّب صورة تانية.');
   img.src=URL.createObjectURL(f);e.target.value='';
 });
-$('demo').addEventListener('click',()=>{stopLive();SRC='scene';paintScene();msg('');draw()});
+function syncSrc(){document.querySelectorAll('#scn button').forEach(b=>b.setAttribute('aria-pressed',SRC==='scene'&&b.dataset.s===S.scene));$('live').setAttribute('aria-pressed',SRC==='live')}
+function setScene(k){stopLive();SRC='scene';S.scene=k;buildQ();paintScene();msg('');syncSrc();draw()}
+$('scn').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setScene(b.dataset.s)});
+$('fsScene').addEventListener('click',()=>{const L=['office','car','home'];setScene(L[(L.indexOf(S.scene)+1)%3])});
 
 const comp=mk(2,2);
 function magXY(){
@@ -547,8 +647,9 @@ function render(){
   const DS=desOf(T);$('iDes').innerHTML='<b>'+DS.ic+' التصميم: '+DS.ar+'</b><br>'+DS.tx;
   $('des').value=S.dOv;
   $('iName').textContent=full(T);$('iTag').textContent='صناعة '+BRANDS[T.b].from+'. '+T.tag;
-  $('mField').style.width=T.field+'%';$('mAdapt').style.width=T.adapt+'%';
-  $('iBen').innerHTML=T.ben.map(b=>`<li>${b}</li>`).join('');
+  $('iStars').innerHTML=RATE_L.map((l,k)=>`<div class="srow"><span>${l}</span><span class="st" aria-label="${T.r[k]} من 5">${'★'.repeat(T.r[k])}<i>${'★'.repeat(5-T.r[k])}</i></span></div>`).join('');
+  $('iBen').innerHTML=T.key.map(b=>`<li>${b}</li>`).join('');
+  $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<h3>${T.lux.t}</h3><ul>${T.lux.l.map(x=>`<li>${x}</li>`).join('')}</ul>`;
   $('fsName').textContent=full(T)+' · '+desOf(T).ar;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
@@ -665,11 +766,11 @@ document.querySelectorAll('.peek').forEach(b=>{b.addEventListener('pointerdown',
 function sumText(){
   const T=LENSES[S.i],D=desOf(T),sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);
   const rx=(S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':'—';
-  return {T,D,rx,lines:['👓 ملخص عدستك','العدسة: '+full(T)+' ('+BRANDS[T.b].from+')','التصميم: '+D.ar,'السعر: '+T.pr+' ريال','المقاس: '+rx+' · إضافة +'+S.add.toFixed(2),'المميزات:'].concat(T.ben.map(b=>'✓ '+b))};
+  return {T,D,rx,lines:['👓 ملخص عدستك','العدسة: '+full(T)+' ('+BRANDS[T.b].from+')','التصميم: '+D.ar,'السعر: '+T.pr+' ريال','المقاس: '+rx+' · إضافة +'+S.add.toFixed(2),'أهم المميزات:'].concat(T.key.map(b=>'✓ '+b)).concat(T.lux?[T.lux.t].concat(T.lux.l.map(b=>'✦ '+b)):[])};
 }
 $('sumB').addEventListener('click',()=>{
   const o=sumText(),esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  $('sumBody').innerHTML='<div class="row2"><span>العدسة</span><b>'+esc(full(o.T))+'</b></div><div class="row2"><span>الصناعة</span><b>'+BRANDS[o.T.b].from+'</b></div><div class="row2"><span>التصميم</span><b>'+o.D.ic+' '+o.D.ar+'</b></div><div class="row2"><span>السعر</span><b>'+o.T.pr+' ريال</b></div><div class="row2"><span>المقاس</span><b dir="ltr">'+o.rx+' · Add +'+S.add.toFixed(2)+'</b></div><ul class="ben">'+o.T.ben.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul>';
+  $('sumBody').innerHTML='<div class="row2"><span>العدسة</span><b>'+esc(full(o.T))+'</b></div><div class="row2"><span>الصناعة</span><b>'+BRANDS[o.T.b].from+'</b></div><div class="row2"><span>التصميم</span><b>'+o.D.ic+' '+o.D.ar+'</b></div><div class="row2"><span>السعر</span><b>'+o.T.pr+' ريال</b></div><div class="row2"><span>المقاس</span><b dir="ltr">'+o.rx+' · Add +'+S.add.toFixed(2)+'</b></div><ul class="ben">'+o.T.key.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul>'+(o.T.lux?'<div class="lux"><h3>'+o.T.lux.t+'</h3><ul>'+o.T.lux.l.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul></div>':'');
   $('sumWa').href='https://wa.me/?text='+encodeURIComponent(o.lines.join('\n'));
   $('sum').hidden=false;
 });
@@ -684,7 +785,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=28;
+const VER=29;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
