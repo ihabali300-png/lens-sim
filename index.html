@@ -200,7 +200,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v46</div>
+  <div id="ver">v47</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -279,7 +279,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 46 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 47 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -818,7 +818,7 @@ function render(){
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
   $('fsName').textContent=full(T)+' · '+desOf(T).ar;
-  $('fsBrand').textContent='🏷️ '+BRANDS[T.b].ar;
+  $('fsBrand').textContent=['🇰🇷','🇯🇵','🇩🇪'][T.b]+' '+BRANDS[T.b].from;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
@@ -1197,7 +1197,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=46;
+const VER=47;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
