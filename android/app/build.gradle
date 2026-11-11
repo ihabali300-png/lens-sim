@@ -7,7 +7,7 @@ android {
         minSdk 24
         targetSdk 34
         versionCode Integer.parseInt(System.getenv('VCODE') ?: '1')
-        versionName '1.' + (System.getenv('VCODE') ?: '1')
+        versionName "1." + (System.getenv('VCODE') ?: '1')
     }
     signingConfigs {
         release {
