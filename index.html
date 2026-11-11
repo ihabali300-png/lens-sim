@@ -42,7 +42,7 @@ button[aria-pressed="true"]{background:var(--accent);color:#231a04;border-color:
 #wrap{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#000;touch-action:none;cursor:grab}
 body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
-#fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:center}
+#fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:flex-start;padding-inline-start:8px}
 body.fs #fsbar{display:flex}
 #fsbar{pointer-events:none}#fsbar>*{pointer-events:auto}
 #fsSel{display:none;position:absolute;inset:0;direction:ltr;pointer-events:none}
@@ -82,6 +82,11 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+#fsRx{display:none;position:absolute;right:8px;top:50%;transform:translateY(-55%);z-index:4;flex-direction:column;gap:6px;direction:ltr}
+body.fs.rx #fsRx{display:flex}
+#fsRx label{display:flex;align-items:center;gap:6px;background:rgba(70,76,90,.88);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:3px 6px}
+#fsRx b{font-size:12px;color:#e8ecf4;width:38px;text-align:left}
+#fsRx select{background:#5a6070;color:#fff;border:0;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:700;width:78px;direction:ltr;flex:none}
 .check{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--ink)}.check input{width:20px;height:20px;accent-color:var(--accent)}
 #home{position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at 50% 30%,#22306a,#0d1430 70%);display:flex;align-items:center;justify-content:center;padding:20px}
 #home[hidden]{display:none}
@@ -191,16 +196,22 @@ body.fs.split .peek{display:none}
   </div>
   <div id="fsbar">
     <button id="fsDown" aria-label="الفئة السابقة">▶</button>
+    <button id="fsUp" aria-label="الفئة التالية">◀</button>
+    <button id="fsBrand" aria-label="غيّر الماركة"></button>
+    <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
     <button id="fsTint" aria-label="العدسة المتغيرة">🕶️</button>
-    <button id="fsBrand" aria-label="غيّر الماركة"></button>
-    <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
-    <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v47</div>
+  <div id="fsRx">
+    <label><b>SPH</b><select id="qSph"></select></label>
+    <label><b>CYL</b><select id="qCyl"></select></label>
+    <label><b>A</b><select id="qAx"></select></label>
+    <label><b>Index</b><select id="qIdx"><option value="1.5">1.50</option><option value="1.56">1.56</option><option value="1.6">1.60</option><option value="1.67">1.67</option><option value="1.74">1.74</option></select></label>
+  </div>
+  <div id="ver">v48</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -279,7 +290,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 47 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 48 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -821,7 +832,7 @@ function render(){
   $('fsBrand').textContent=['🇰🇷','🇯🇵','🇩🇪'][T.b]+' '+BRANDS[T.b].from;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
-  $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
+  $('oAdd').textContent='+'+S.add.toFixed(2);if(typeof syncQ==='function')syncQ();$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
   $('rxLine').textContent='المقاس: '+sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'° · إضافة +'+S.add.toFixed(2);
   draw();
 }
@@ -848,6 +859,13 @@ $('rxOn').addEventListener('change',e=>{S.rxOn=e.target.checked;$('rxBox').hidde
   else{S.rxSave=[S.sph,S.cyl,S.axis];S.sph=0;S.cyl=0;S.axis=180;S.idx=1.5}
   render()});
 $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
+const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
+(function(){let o='';for(let v=8;v>=-10;v-=.25)o+='<option value="'+v+'">'+fq(v)+'</option>';$('qSph').innerHTML=o;
+ o='';for(let v=0;v>=-6;v-=.25)o+='<option value="'+v+'">'+fq(v)+'</option>';$('qCyl').innerHTML=o;
+ o='';for(let v=0;v<=180;v+=5)o+='<option value="'+v+'">'+v+'°</option>';$('qAx').innerHTML=o})();
+function syncQ(){document.body.classList.toggle('rx',S.rxOn);$('qSph').value=S.sph;$('qCyl').value=S.cyl;$('qAx').value=S.axis;$('qIdx').value=S.idx}
+[['qSph','sph'],['qCyl','cyl'],['qAx','axis']].forEach(([q,k])=>$(q).addEventListener('change',e=>{S[k]=+e.target.value;$(k).value=S[k];render()}));
+$('qIdx').addEventListener('change',e=>{S.idx=+e.target.value;$('idx').value=e.target.value;render()});
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 function syncZ(){const Z=S.zones,any=Z.far||Z.mid||Z.near;
   document.querySelectorAll('#zbtns button').forEach(b=>b.setAttribute('aria-pressed',Z[b.dataset.z]));
@@ -1197,7 +1215,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=47;
+const VER=48;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
