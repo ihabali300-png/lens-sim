@@ -223,7 +223,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v60</div>
+  <div id="ver">v61</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -302,7 +302,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 60 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 61 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -931,6 +931,8 @@ $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
 function dxName(){const sp=S.sph,cy=S.cyl;if(!sp&&!cy)return '👁️ نظر سليم';if(!cy)return sp<0?'قصر نظر بسيط':'طول نظر بسيط';if(!sp)return 'استجماتيزم بسيط';if(sp>0&&sp+cy<0)return 'استجماتيزم مختلط';return sp<0?'قصر نظر مع استجماتيزم':'طول نظر مع استجماتيزم'}
 $('noLensB').addEventListener('click',()=>{S.noLens=!S.noLens;$('noLensB').setAttribute('aria-pressed',S.noLens);$('noLensB').textContent=S.noLens?'👓 رجّع العدسة':'👓 بدون عدسة';draw()});
+/* light update while a wheel spins: no page rebuild, one redraw per frame */
+let rxq=0;function rxLite(){if($('dx'))$('dx').textContent=dxName();if(SRC==='live'||rxq)return;rxq=requestAnimationFrame(()=>{rxq=0;draw()})}
 function syncQ(){if($('dx'))$('dx').textContent=dxName();document.body.classList.toggle('rx',S.rxOn);if(!WHEELS.wSph)return;WHEELS.wSph.set(S.sph);WHEELS.wCyl.set(S.cyl);WHEELS.wAx.set(S.axis);WHEELS.wIdx.set(S.idx)}
 /* ---------- wheel pickers for the quick prescription box ---------- */
 const WH_H=19,WHEELS={};
@@ -942,8 +944,8 @@ function mkWheel(id,key,vals,fmt,after){
   el.addEventListener('scroll',()=>{
     W.busy=1;clearTimeout(W.t);
     const i=clamp(Math.round(el.scrollTop/WH_H),0,vals.length-1);
-    if(i!==W.cur){W.cur=i;mark(i);try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}S[key]=vals[i];after(vals[i]);render()}
-    W.t=setTimeout(()=>{W.busy=0;el.scrollTo({top:W.cur*WH_H,behavior:'smooth'})},140);
+    if(i!==W.cur){W.cur=i;mark(i);try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}S[key]=vals[i];after(vals[i]);rxLite()}
+    W.t=setTimeout(()=>{W.busy=0;el.scrollTo({top:W.cur*WH_H,behavior:'smooth'});render()},350);
   },{passive:true});
   return W;
 }
@@ -1304,7 +1306,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=60;
+const VER=61;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
