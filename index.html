@@ -82,6 +82,7 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+#depTag{display:none;position:absolute;left:8px;top:8px;z-index:4;background:rgba(13,20,48,.85);color:#fff;font-size:12.5px;border-radius:10px;padding:5px 10px;pointer-events:none}#depTag.on{display:block}
 #fsRx{display:none;position:absolute;right:8px;top:8px;z-index:4;flex-direction:column;gap:6px;direction:ltr}
 body.fs.rx #fsRx{display:grid;grid-template-columns:auto auto;grid-auto-rows:auto;gap:5px;align-items:center}
 #fsRx .wr{grid-column:2}
@@ -218,7 +219,8 @@ body.fs.split .peek{display:none}
     <div class="wr"><b>Index</b><div class="wh" id="wIdx"></div></div>
     <div id="dx"></div>
   </div>
-  <div id="ver">v54</div>
+  <div id="depTag"></div>
+  <div id="ver">v55</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -297,7 +299,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 54 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 55 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -446,7 +448,7 @@ function qAt(u,v){
   if(v>57) return .5+.5*ss((v-60)/20);
   return 0;
 }
-function buildQ(){Q=new Float32Array(GX*GY);for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)Q[j*GX+i]=qAt((i+.5)/GX*SW,(j+.5)/GY*90)}
+function buildQ(){Q=new Float32Array(GX*GY);if(typeof fillQ==='function'&&window.__srcReady&&SRC!=='scene'){fillQ();return}for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)Q[j*GX+i]=qAt((i+.5)/GX*SW,(j+.5)/GY*90)}
 buildQ();
 
 function paintScene(){
@@ -600,11 +602,11 @@ function computeMasks(TA,TB){
         const T=x>0?TB:TA,d=isSV()?Math.hypot(x,(y+3)/.85)-T.rc*rxNarrow(T):Math.abs(x)-halfW(T,y);
         const rxb=(1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl)))*(1+(S.idx-1.5)*1.3);
         const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
-        const bd=SRC==='scene'&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
+        const bd=(SRC==='scene'||(S.rxOn&&DEP.ok))&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
         /* single vision: edge blur comes from the prescription, so it is light at 0.00 and grows with power */
         const pw=Math.abs(S.sph)+Math.abs(S.cyl),svm=isSV()?(S.rxOn?Math.min(1,pw/4):.3+.7*Math.min(1,pw/4)):1;
         be=Math.max((SRC==='scene'||isSV()?ba:ba*1.4)*svm,bd);
-      } else be=S.rxOn?defo(SRC==='scene'?q:.35):(SRC==='scene'?.3+.5*q:0);
+      } else be=S.rxOn?defo(q):(SRC==='scene'?.3+.5*q:0);
       d1[k+3]=255*clamp(be/.45,0,1);d2[k+3]=255*clamp((be-.45)/.55,0,1);
     }}
   m1.getContext('2d').putImageData(i1,0,0);m2.getContext('2d').putImageData(i2,0,0);
@@ -620,7 +622,56 @@ function pill(str,x,y){
   const w=ctx.measureText(str).width+4;ctx.fillStyle='rgba(240,195,106,.95)';ctx.fillRect(x-w/2,y-2.6,w,5.2);ctx.fillStyle='#231a04';ctx.fillText(str,x,y+.1);
 }
 /* ---------- camera / photo source ---------- */
-let SRC='scene',vid=null,stream=null,raf=0,lastImg=null;
+let SRC='scene',vid=null,stream=null,raf=0,lastImg=null;window.__srcReady=1;
+/* ---------- AI depth for live camera and photos (Depth Anything V2, runs on the phone) ---------- */
+const DEP={st:'idle',pipe:null,RI:null,busy:false,ok:false,w:0,h:0,ch:1,data:null,lo:0,hi:255};
+const dcv=mk(256,144);
+const depOn=()=>S.rxOn&&(SRC==='live'||SRC==='photo');
+function depMsg(t){const e=$('depTag');if(!e)return;e.textContent=t||'';e.classList.toggle('on',!!t)}
+function fillQ(){
+  if(SRC==='scene')return;
+  if(Q.length!==GX*GY)Q=new Float32Array(GX*GY);
+  if(DEP.ok&&DEP.data){
+    const sp=(DEP.hi-DEP.lo)||1;
+    for(let j=0;j<GY;j++){const y=Math.min(DEP.h-1,Math.floor((j+.5)/GY*DEP.h));
+      for(let i=0;i<GX;i++){const x=Math.min(DEP.w-1,Math.floor((i+.5)/GX*DEP.w));Q[j*GX+i]=clamp((DEP.data[(y*DEP.w+x)*DEP.ch]-DEP.lo)/sp,0,1)}}
+  } else for(let j=0;j<GY;j++){const q=ss(((j+.5)/GY*90-25)/60);for(let i=0;i<GX;i++)Q[j*GX+i]=q}
+}
+async function depLoad(){
+  if(DEP.st!=='idle')return;DEP.st='loading';depMsg('🤖 بيحمّل نموذج العمق…');
+  let T;
+  try{T=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2')}catch(e){DEP.st='fail';depMsg('🤖 العمق الذكي مش متاح هنا، شغال التقدير البسيط');setTimeout(()=>depMsg(''),4000);return}
+  DEP.RI=T.RawImage;
+  const tries=navigator.gpu?[['webgpu','fp16'],['wasm','q8']]:[['wasm','q8']];
+  for(const [device,dtype] of tries){
+    try{
+      DEP.pipe=await T.pipeline('depth-estimation','onnx-community/depth-anything-v2-small',{device,dtype,
+        progress_callback:p=>{if(p.status==='progress'&&p.file&&/\.onnx$/.test(p.file))depMsg('🤖 بيحمّل نموذج العمق… '+Math.round(p.progress||0)+'%')}});
+      DEP.st='ready';DEP.dev=device;break;
+    }catch(e){DEP.pipe=null}
+  }
+  if(!DEP.pipe){DEP.st='fail';depMsg('🤖 العمق الذكي مش شغال على الجهاز ده، شغال التقدير البسيط');setTimeout(()=>depMsg(''),4000);return}
+  depMsg('🤖 العمق الذكي شغال');setTimeout(()=>{if(DEP.st==='ready')depMsg('')},2500);
+  depRun();
+}
+async function depRun(){
+  if(DEP.st!=='ready'||DEP.busy||!depOn())return;
+  DEP.busy=true;
+  try{
+    dcv.width=Math.round(144*SW/90);dcv.height=144;
+    const c=dcv.getContext('2d');c.drawImage(sharp,0,0,dcv.width,dcv.height);
+    const id=c.getImageData(0,0,dcv.width,dcv.height);
+    const img=new DEP.RI(id.data,dcv.width,dcv.height,4).rgb();
+    const out=await DEP.pipe(img),d=out.depth;
+    DEP.w=d.width;DEP.h=d.height;DEP.ch=d.channels||1;DEP.data=d.data;
+    const smp=[];for(let k=0;k<400;k++)smp.push(d.data[Math.floor(Math.random()*d.width*d.height)*DEP.ch]);smp.sort((a,b)=>a-b);
+    DEP.lo=smp[20];DEP.hi=smp[380];DEP.ok=true;fillQ();if(SRC!=='live')draw();
+  }catch(e){DEP.st='fail';DEP.ok=false;fillQ();depMsg('🤖 العمق الذكي وقف، شغال التقدير البسيط');setTimeout(()=>depMsg(''),4000)}
+  DEP.busy=false;
+  if(SRC==='live'&&depOn())setTimeout(depRun,DEP.dev==='webgpu'?150:400);
+}
+function depKick(reset){if(reset)DEP.ok=false;fillQ();if(!depOn())return;if(DEP.st==='idle')depLoad();else if(DEP.st==='ready')depRun()}
+
 function blurChain(){
   [[sharp,bMid],[bMid,b1],[b1,b2]].forEach(([a,b])=>{const k=b.getContext('2d');k.imageSmoothingQuality='high';k.clearRect(0,0,b.width,b.height);k.drawImage(a,0,0,b.width,b.height)});
 }
@@ -640,7 +691,7 @@ $('live').addEventListener('click',async()=>{
   try{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
     vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.srcObject=stream;await vid.play();
-    SRC='live';syncSrc();loop();
+    SRC='live';syncSrc();depKick(true);loop();
   }catch(e){stopLive();
     const n=e&&e.name||'', inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
     let t;
@@ -655,7 +706,7 @@ $('live').addEventListener('click',async()=>{
 });
 $('photo').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];if(!f)return;
-  const img=new Image();img.onload=()=>{stopLive();SRC='photo';syncSrc();lastImg=img;coverInto(img,img.naturalWidth,img.naturalHeight);msg('');draw()};
+  const img=new Image();img.onload=()=>{stopLive();SRC='photo';syncSrc();lastImg=img;coverInto(img,img.naturalWidth,img.naturalHeight);msg('');depKick(true);draw()};
   img.onerror=()=>msg('الصورة دي مش راضية تفتح، جرّب صورة تانية.');
   img.src=URL.createObjectURL(f);e.target.value='';
 });
@@ -874,7 +925,7 @@ $('one').addEventListener('click',()=>{S.cmpOn=false;S.cmp=-1;render()});
 $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
 $('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
-$('rxOn').addEventListener('change',e=>{setTimeout(syncQ,50);S.rxOn=e.target.checked;$('rxBox').hidden=!S.rxOn;
+$('rxOn').addEventListener('change',e=>{setTimeout(()=>depKick(false),0);setTimeout(syncQ,50);S.rxOn=e.target.checked;$('rxBox').hidden=!S.rxOn;
   if(S.rxOn){[S.sph,S.cyl,S.axis]=S.rxSave;$('sph').value=S.sph;$('cyl').value=S.cyl;$('axis').value=S.axis;S.idx=+$('idx').value}
   else{S.rxSave=[S.sph,S.cyl,S.axis];S.sph=0;S.cyl=0;S.axis=180;S.idx=1.5}
   render()});
@@ -1254,7 +1305,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=54;
+const VER=55;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
