@@ -82,13 +82,14 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
-#fsRx{display:none;position:absolute;right:8px;top:8px;z-index:4;flex-direction:column;gap:6px;direction:ltr}
-body.fs.rx #fsRx{display:flex}
+#fsRx{display:none;position:absolute;right:8px;top:8px;bottom:72px;max-width:46%;flex-wrap:wrap;align-content:flex-start;justify-content:flex-end;z-index:4;flex-direction:column;gap:6px;direction:ltr}
+body.fs.rx #fsRx{display:flex;flex-direction:row}
+#fsRx .wr{width:132px}
 #fsRx .wr{display:flex;align-items:center;gap:4px;background:rgba(60,66,80,.42);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:0 4px 0 8px;backdrop-filter:blur(2px)}
 #fsRx b{font-size:11.5px;color:#e8ecf4;width:36px;text-align:left}
-.wh{height:72px;width:70px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:24px 0;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);touch-action:pan-y;overscroll-behavior:contain}
+.wh{height:66px;width:62px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:21px 0;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);touch-action:pan-y;overscroll-behavior:contain}
 .wh::-webkit-scrollbar{display:none}
-.wh div{height:24px;line-height:24px;text-align:center;scroll-snap-align:center;color:rgba(255,255,255,.55);font-size:14px;font-variant-numeric:tabular-nums}
+.wh div{height:22px;line-height:22px;text-align:center;scroll-snap-align:center;color:rgba(255,255,255,.55);font-size:14px;font-variant-numeric:tabular-nums}
 .wh div.on{color:#fff;font-weight:800;font-size:16px}
 .check{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--ink)}.check input{width:20px;height:20px;accent-color:var(--accent)}
 #home{position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at 50% 30%,#22306a,#0d1430 70%);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -214,7 +215,7 @@ body.fs.split .peek{display:none}
     <div class="wr"><b>A</b><div class="wh" id="wAx"></div></div>
     <div class="wr"><b>Index</b><div class="wh" id="wIdx"></div></div>
   </div>
-  <div id="ver">v51</div>
+  <div id="ver">v52</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -293,7 +294,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 51 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 52 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -869,7 +870,7 @@ $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
 function syncQ(){document.body.classList.toggle('rx',S.rxOn);if(!WHEELS.wSph)return;WHEELS.wSph.set(S.sph);WHEELS.wCyl.set(S.cyl);WHEELS.wAx.set(S.axis);WHEELS.wIdx.set(S.idx)}
 /* ---------- wheel pickers for the quick prescription box ---------- */
-const WH_H=24,WHEELS={};
+const WH_H=22,WHEELS={};
 function mkWheel(id,key,vals,fmt,after){
   const el=$(id);el.innerHTML=vals.map(v=>'<div>'+fmt(v)+'</div>').join('');
   const W={el,vals,key,cur:-1,busy:0,t:0};WHEELS[id]=W;
@@ -1240,7 +1241,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=51;
+const VER=52;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
