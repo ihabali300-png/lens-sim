@@ -110,7 +110,7 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v21</div>
+  <div id="ver">v22</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -161,7 +161,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 21 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 22 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -224,6 +224,7 @@ function halfW0(T,y,a){
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const sharp=mk(1600,900),bMid=mk(800,450),b1=mk(400,225),b2=mk(160,90),tmp=mk(640,360),m1=mk(GX,GY),m2=mk(GX,GY);
 let Q=new Float32Array(GX*GY);
+const FV0=10,FV1=87; /* visible scene rows in full screen */
 const DX=()=>SW/2-80; /* shift that keeps the desk objects centred when the scene is wider */
 function qAt(u,v){
   u-=DX();
@@ -396,8 +397,8 @@ function zlabel(c,icon,str,sub,x,y){
 function drawPanel(x0,w,TA,TB,split){
   const fs=document.body.classList.contains('fs');
   if(fs){ /* full screen: whole scene between the top selectors and the bottom controls, never under the buttons */
-    const top=split?54:6,bot=64,av=ch-top-bot;
-    sc=Math.min(w/SW,av/90);ox=x0+(w-SW*sc)/2;oy=top+(av-90*sc)/2;
+    const top=split?54:4,bot=60,av=ch-top-bot,V0=FV0,VH=FV1-FV0; /* crop empty sky and desk edge so things look bigger */
+    sc=Math.min(w/SW,av/VH);ox=x0+(w-SW*sc)/2;oy=top+(av-VH*sc)/2-V0*sc;
   } else {sc=Math.max(w/SW,ch/90);ox=x0+(w-SW*sc)/2;oy=(ch-90*sc)*.65}
   PANELS.push({x0,w,ox,oy,sc});
   computeMasks(TA,TB);
@@ -454,7 +455,7 @@ function draw(){
   PANELS=[];
   const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
-  K=isSplit()?1.5:1.6;
+  K=isSplit()?1.5:document.body.classList.contains('fs')?1.5:1.6;
   if(isSplit()){
     const h=cw/2;drawPanel(0,h,TA,TA,true);drawPanel(h,h,TB,TB,true);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);
@@ -478,7 +479,7 @@ function layout(){
   cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
   /* scene width follows the screen shape in full screen, so the picture fills it */
   let tgt=160;
-  if(fs){const sp=S.cmpOn&&S.cmp>=0,av=ch-(sp?54:6)-64,w=sp?cw/2:cw;tgt=clamp(Math.round(90*w/av),160,420)}
+  if(fs){const sp=S.cmpOn&&S.cmp>=0,av=ch-(sp?54:4)-60,w=sp?cw/2:cw;tgt=clamp(Math.round((FV1-FV0)*w/av),160,420)}
   if(tgt!==SW)setSW(tgt);
   draw();
 }
