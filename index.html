@@ -180,7 +180,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v40</div>
+  <div id="ver">v41</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -253,7 +253,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 40 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 41 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -714,8 +714,6 @@ function draw(){
   } else drawPanel(0,cw,TA,TB);
   if(S.tint!=='none'&&(SRC==='live'||SRC==='photo'))PANELS.forEach(P=>{
     const lx=P.ox+SW/2*P.sc;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.beginPath();ctx.rect(P.x0,0,P.w,ch);ctx.clip();
-    ctx.fillStyle='rgba(255,214,110,.10)';ctx.fillRect(lx,0,P.x0+P.w-lx,ch);
-    ctx.fillStyle='rgba(20,30,70,.16)';ctx.fillRect(P.x0,0,lx-P.x0,ch);
     ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,ch);ctx.stroke();
     ctx.strokeStyle='#ffd23f';ctx.lineWidth=3;ctx.stroke();
     const tag=(t,x,bg,fg)=>{ctx.font='700 15px "IBM Plex Sans Arabic",Tahoma,sans-serif';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';const w=ctx.measureText(t).width+22;ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,ch*.42-15,w,30,15):ctx.rect(x-w/2,ch*.42-15,w,30);ctx.fill();ctx.fillStyle=fg;ctx.fillText(t,x,ch*.42+1)};
@@ -1083,7 +1081,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=40;
+const VER=41;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
