@@ -238,7 +238,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v66</div>
+  <div id="ver">v67</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -317,7 +317,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 66 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 67 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -766,6 +766,10 @@ function zlabel(c,icon,str,sub,x,y){
   c.fillStyle='rgba(220,232,255,.9)';c.font='500 1.7px "IBM Plex Sans Arabic",Tahoma,sans-serif';c.fillText(sub,x,y+1.5);
   c.restore();
 }
+/* how much the uncorrected cylinder bothers the eye (clinical feedback):
+   low powers are mild, not a sharp smear; against-the-rule (axis near 90) bothers most,
+   with-the-rule (axis near 180) is the easiest to adapt to */
+function cylEff(){const c=Math.abs(S.cyl);if(!c)return 0;const m=c<1?c*c*.7:c-.3,sn=Math.sin(S.axis*Math.PI/180);return m*(.55+.45*sn*sn)}
 function drawPanel(x0,w,TA,TB,split){
   const fs=document.body.classList.contains('fs');
   if(fs){ /* full screen: whole scene between the top selectors and the bottom controls, never under the buttons */
@@ -787,12 +791,12 @@ function drawPanel(x0,w,TA,TB,split){
   });
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();
   ctx.drawImage(comp,0,0);
-  if(S.rxOn&&S.cyl){ /* astigmatism: blur stretched along one direction at every distance, with a faint double image */
-    const a=S.axis*Math.PI/180,len=Math.abs(S.cyl)*2.2*sc*dpr,dx=Math.cos(a),dy=-Math.sin(a),n=Math.min(24,8+Math.round(len/3));
+  if(S.rxOn&&S.cyl&&cylEff()>.02){ /* astigmatism: blur stretched along one direction at every distance, with a faint double image */
+    const a=S.axis*Math.PI/180,len=cylEff()*2.2*sc*dpr,dx=Math.cos(a),dy=-Math.sin(a),n=Math.min(24,8+Math.round(len/3));
     const k4=4,sw=Math.ceil(cv.width/k4),sh=Math.ceil(cv.height/k4);if(smc.width!==sw||smc.height!==sh){smc.width=sw;smc.height=sh}
     const g=smc.getContext('2d');g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.clearRect(0,0,sw,sh);const nn=Math.min(9,n);
     for(let k=0;k<nn;k++){const t=(k/(nn-1)-.5)*len/k4;g.globalAlpha=1/(k+1);g.drawImage(comp,dx*t,dy*t,sw,sh)}
-    g.globalAlpha=Math.min(.35,Math.abs(S.cyl)*.12);g.drawImage(comp,dx*len*.55/k4,dy*len*.55/k4,sw,sh);
+    g.globalAlpha=Math.min(.35,cylEff()*.12);g.drawImage(comp,dx*len*.55/k4,dy*len*.55/k4,sw,sh);
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();ctx.imageSmoothingEnabled=true;ctx.drawImage(smc,0,0,cv.width,cv.height);ctx.restore();
   }
   if(S.noLens){ctx.restore();return}
@@ -953,7 +957,8 @@ $('rxOn').addEventListener('change',e=>{setTimeout(()=>depKick(false),0);setTime
   render()});
 $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
-function dxName(){const sp=S.sph,cy=S.cyl;if(!sp&&!cy)return '👁️ نظر سليم';if(!cy)return sp<0?'قصر نظر بسيط':'طول نظر بسيط';if(!sp)return 'استجماتيزم بسيط';if(sp>0&&sp+cy<0)return 'استجماتيزم مختلط';return sp<0?'قصر نظر مع استجماتيزم':'طول نظر مع استجماتيزم'}
+function dxName(){const b=dxBase();if(!S.cyl)return b;const x=S.axis%180,t=(x<=30||x>=150)?'مع القاعدة':(x>=60&&x<=120)?'عكس القاعدة':'مائل';return b+' · '+t}
+function dxBase(){const sp=S.sph,cy=S.cyl;if(!sp&&!cy)return '👁️ نظر سليم';if(!cy)return sp<0?'قصر نظر بسيط':'طول نظر بسيط';if(!sp)return 'استجماتيزم بسيط';if(sp>0&&sp+cy<0)return 'استجماتيزم مختلط';return sp<0?'قصر نظر مع استجماتيزم':'طول نظر مع استجماتيزم'}
 $('noLensB').addEventListener('click',()=>{S.noLens=!S.noLens;$('noLensB').setAttribute('aria-pressed',S.noLens);$('noLensB').textContent=S.noLens?'👓 رجّع العدسة':'👓 بدون عدسة';draw()});
 /* light update while a wheel spins: no page rebuild, one redraw per frame */
 let rxq=0;function rxLite(){if($('dx'))$('dx').textContent=dxName();if(SRC==='live'||rxq)return;rxq=requestAnimationFrame(()=>{rxq=0;draw()})}
@@ -1330,7 +1335,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=66;
+const VER=67;
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
