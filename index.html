@@ -82,6 +82,7 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+.check{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--ink)}.check input{width:20px;height:20px;accent-color:var(--accent)}
 #home{position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at 50% 30%,#22306a,#0d1430 70%);display:flex;align-items:center;justify-content:center;padding:20px}
 #home[hidden]{display:none}
 .hbox{width:min(440px,100%);display:flex;flex-direction:column;gap:14px;text-align:center}
@@ -193,13 +194,13 @@ body.fs.split .peek{display:none}
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
     <button id="fsTint" aria-label="العدسة المتغيرة">🕶️</button>
-    <button class="sunB"></button>
+    <button id="fsBrand" aria-label="غيّر الماركة"></button>
     <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v43</div>
+  <div id="ver">v44</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -262,18 +263,23 @@ body.fs.split .peek{display:none}
 
 <details>
   <summary>إعدادات البائع</summary>
+  <label class="check" style="margin:8px 0"><input type="checkbox" id="rxOn"> محاكاة واقعية للمقاس ومعامل الانكسار</label>
+  <div id="rxBox" hidden>
+  <p><label for="idx">معامل الانكسار:</label></p>
+  <select id="idx" style="width:100%"><option value="1.5">1.50</option><option value="1.56">1.56</option><option value="1.6">1.60</option><option value="1.67">1.67</option><option value="1.74">1.74</option></select>
   <p><label for="sph">المقاس الكروي (سفير):</label> <output id="oSph"></output></p>
   <input type="range" id="sph" min="-10" max="8" step="0.25" value="0">
   <p><label for="cyl">الاستجماتيزم (سلندر):</label> <output id="oCyl"></output></p>
   <input type="range" id="cyl" min="-6" max="0" step="0.25" value="0">
   <p><label for="axis">المحور (أكسيس):</label> <output id="oAxis"></output></p>
   <input type="range" id="axis" min="0" max="180" step="5" value="180">
+  </div>
   <p class="addRow"><label for="add">قوة الإضافة للعميل:</label> <output id="oAdd"></output></p>
   <input class="addRow" type="range" id="add" min="0.25" max="4" step="0.25" value="2">
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 43 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 44 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -316,6 +322,7 @@ const B_EXC=B_SIG.concat(['تركيز حاد فوري','تكيّف سهل وسر
 const B_DIG=['رؤية واضحة للبعيد والمتوسط والقريب','تصميم رقمي للاستخدام اليومي'];
 const B_PRM=B_DIG.concat(['مجال أوسع للقراءة والشاشة']);
 const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكورية']);
+const DZ=[.10,.055,.03,.012];
 const DESIGNS=[
  {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
  {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
@@ -362,9 +369,11 @@ let LENSES=[
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
 LENSES.forEach((t,k)=>Object.assign(t,EXTRA[k],PROT[k]));
+function coat(t){t.arc=(t.b===0||(t.b===1&&t.en==='Premier'))?'blue':'green';t.ow=t.b===0?.22:(t.b===1&&t.en==='Premier')?.09:0}
+LENSES.forEach(coat);
 let MODE='pal';
 const isSV=()=>MODE==='sv';
-const S={scene:'office',pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
+const S={rxOn:false,idx:1.5,rxSave:[0,0,180],scene:'office',pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 let K=1.6,SW=160,GX=96;const L=14,M=2.2,NP=3.2,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -567,7 +576,7 @@ function computeMasks(TA,TB){
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*SW,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
         const T=x>0?TB:TA,d=isSV()?Math.hypot(x,(y+3)/.85)-T.rc*rxNarrow(T):Math.abs(x)-halfW(T,y);
-        const rxb=1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl));
+        const rxb=(1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl)))*(1+(S.idx-1.5)*1.3);
         const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
         const bd=SRC==='scene'&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
         be=Math.max(SRC==='scene'?ba:ba*1.4,bd);
@@ -633,7 +642,7 @@ $('fsScene').addEventListener('click',()=>{const L=['office','car','home','door'
 
 const comp=mk(2,2);
 function magXY(){
-  const k=1.3,m=P=>1/(1-.012*k*P);
+  const k=1.3*(1-(S.idx-1.5)*.5),m=P=>1/(1-.012*k*P);
   return [m(S.sph),m(S.sph+S.cyl)];
 }
 function edgePath(c,T,side,y0,y1){
@@ -690,8 +699,29 @@ function drawPanel(x0,w,TA,TB,split){
   /* inside the lens: prescription magnification / minification and cylinder stretch */
   const [mA,mP]=magXY(),cx=(ox+S.gx*sc)*dpr,cy=(oy+S.gy*sc)*dpr,ax=-S.axis*Math.PI/180;
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.translate(ox,oy);ctx.scale(sc,sc);ctx.beginPath();lensPoly(ctx);ctx.clip();
-  ctx.setTransform(1,0,0,1,0,0);ctx.translate(cx,cy);ctx.rotate(ax);ctx.scale(mA,mP);ctx.rotate(-ax);ctx.translate(-cx,-cy);
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(comp,0,0);
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  const Rx=26*K*sc*dpr,Ry=18*K*sc*dpr,halves=TA===TB?[[0,TA]]:[[-1,TA],[1,TB]];
+  halves.forEach(([side,T])=>{
+    ctx.save();
+    if(side){ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();side<0?ctx.rect(0,0,cx,cv.height):ctx.rect(cx,0,cv.width-cx,cv.height);ctx.clip()}
+    /* radial distortion: rings drawn from the edge inwards; stronger for simpler designs */
+    const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1),N=kd>.004?20:1;
+    for(let n=N;n>=1;n--){
+      const t=n/N,f=1-kd*Math.pow(N>1?(t-.5/N):0,2);
+      ctx.save();ctx.setTransform(1,0,0,1,0,0);
+      if(n<N){ctx.beginPath();ctx.ellipse(cx,cy,Rx*t,Ry*t,0,0,7);ctx.clip()}
+      ctx.translate(cx,cy);ctx.rotate(ax);ctx.scale(mA*f,mP*f);ctx.rotate(-ax);ctx.translate(-cx,-cy);
+      ctx.drawImage(comp,0,0);ctx.restore();
+    }
+    /* coating look: off-white cast and anti-reflection colour */
+    ctx.setTransform(1,0,0,1,0,0);
+    if(T.ow){ctx.globalCompositeOperation='multiply';ctx.globalAlpha=T.ow;ctx.fillStyle='#ffe9b8';ctx.fillRect(0,0,cv.width,cv.height)}
+    ctx.globalCompositeOperation='screen';ctx.globalAlpha=1;
+    const g=ctx.createRadialGradient(cx-Rx*.55,cy-Ry*.6,0,cx-Rx*.55,cy-Ry*.6,Rx*.7);
+    const ac=T.arc==='blue'?'90,150,255':'80,220,140';g.addColorStop(0,'rgba('+ac+',.20)');g.addColorStop(1,'rgba('+ac+',0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.restore();
+  });
   if(typeof tintDraw==='function')tintDraw();
   ctx.restore();
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.translate(ox,oy);ctx.scale(sc,sc);
@@ -785,6 +815,7 @@ function render(){
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
   $('fsName').textContent=full(T)+' · '+desOf(T).ar;
+  $('fsBrand').textContent='🏷️ '+BRANDS[T.b].ar;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
@@ -809,6 +840,11 @@ $('one').addEventListener('click',()=>{S.cmpOn=false;S.cmp=-1;render()});
 $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
 $('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
+$('rxOn').addEventListener('change',e=>{S.rxOn=e.target.checked;$('rxBox').hidden=!S.rxOn;
+  if(S.rxOn){[S.sph,S.cyl,S.axis]=S.rxSave;$('sph').value=S.sph;$('cyl').value=S.cyl;$('axis').value=S.axis;S.idx=+$('idx').value}
+  else{S.rxSave=[S.sph,S.cyl,S.axis];S.sph=0;S.cyl=0;S.axis=180;S.idx=1.5}
+  render()});
+$('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 function syncZ(){const Z=S.zones,any=Z.far||Z.mid||Z.near;
   document.querySelectorAll('#zbtns button').forEach(b=>b.setAttribute('aria-pressed',Z[b.dataset.z]));
@@ -826,6 +862,7 @@ function zoneAt(e){
   if(Math.pow(Math.abs(u-S.gx)/(26*K),NP)+Math.pow(Math.abs(v-S.gy)/(18*K),NP)>1)return null;
   const yl=-(v-S.gy)/K-3;return yl>=ZF()?'far':yl>ZN()?'mid':'near';
 }
+$('fsBrand').addEventListener('click',()=>{const bs=[...new Set(LENSES.map(t=>t.b))],nb=bs[(bs.indexOf(LENSES[S.i].b)+1)%bs.length];pick(LENSES.findIndex(t=>t.b===nb))});
 $('fsUp').addEventListener('click',()=>pick(cyc(S.i,1)));
 $('fsDown').addEventListener('click',()=>pick(cyc(S.i,-1)));
 function lensOpts(){return BRANDS.map((b,k)=>'<optgroup label="'+b.ar+'">'+LENSES.map((t,i)=>t.b===k?'<option value="'+i+'">'+full(t)+' · '+t.pr+' ريال</option>':'').join('')+'</optgroup>').join('')}
@@ -1123,7 +1160,7 @@ const LENS_SV=[
   r:[5,5,5,5,5],lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','وضوح كامل لحد أطراف العدسة'],['UltraSlim','أنحف عدسة'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']],
   lux:{t:'👑 رفاهية الرؤية القصوى',l:['أوسع مجال واضح في كل العدسات','أنحف وأخف عدسة','تركيز فوري من غير إجهاد']}}
 ];
-LENS_SV.forEach(t=>{t.key=t.tech.map(x=>x[0]+': '+x[1]);t.ben=t.key;t.cf=1;t.nf=1;t.df=1;t.field=Math.round(t.rc/23*100);t.adapt=t.field});
+LENS_SV.forEach(t=>{coat(t);t.key=t.tech.map(x=>x[0]+': '+x[1]);t.ben=t.key;t.cf=1;t.nf=1;t.df=1;t.field=Math.round(t.rc/23*100);t.adapt=t.field});
 const LENS_PAL=LENSES;
 const COMF_SV=['اتساع المجال الواضح','وضوح الأطراف','راحة الشاشة','خفة ونحافة'];
 const COMF_PAL=COMF_L.slice();
@@ -1157,7 +1194,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=43;
+const VER=44;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
