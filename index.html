@@ -93,7 +93,7 @@ body.fs #tPanel.pop{display:block;position:fixed;z-index:1500;left:50%;top:50%;t
 body.fs #tPanel.pop #tClose{display:block}
 body:not(.fs) #fsTint{display:none}
 #tStat{display:none;position:absolute;top:8px;right:8px;z-index:3;background:rgba(13,20,48,.82);border-radius:12px;padding:5px 10px;font-size:12.5px;pointer-events:none;max-width:70%}
-#tStat.on{display:block}#tStat i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-inline-end:5px;vertical-align:-1px;border:1px solid #fff}
+#tStat.on{display:block}#tStat .tf{display:block;font-size:11px;opacity:.8}#tStat i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-inline-end:5px;vertical-align:-1px;border:1px solid #fff}
 #tStat .tb{display:block;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin-top:4px;overflow:hidden}#tStat .tb span{display:block;height:100%}
 body.fs #ver{display:none}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -178,7 +178,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v36</div>
+  <div id="ver">v37</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -251,7 +251,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 36 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 37 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1000,15 +1000,15 @@ $('cmCopy').addEventListener('click',async()=>{try{await navigator.clipboard.wri
 
 /* ---------- photochromic / Transitions ---------- */
 const TINTS={
- photo:{name:'فوتوكروميك',max:.60,rest:.05,tOn:25,tOff:200,cols:[['رمادي','#45484d'],['بني','#6b4426'],['أخضر','#37573d']]},
- gen8:{name:'ترانزشن Gen 8',max:.78,rest:0,tOn:8,tOff:60,cols:[['رمادي','#3e4146'],['بني','#64401f'],['أخضر','#2f5236'],['ياقوتي','#7a1f3d'],['سافير','#3f8fd0']]}
+ photo:{fact:'أقصى غمقان 60% · بيصفى في حوالي 10 دقايق',name:'فوتوكروميك',max:.60,rest:.05,tOn:25,tOff:200,cols:[['رمادي','#45484d'],['بني','#6b4426'],['أخضر','#37573d']]},
+ gen8:{fact:'بيغمق في حوالي 30 ثانية · بيصفى في حوالي 4 دقايق ونص',name:'ترانزشن Gen 8',max:.78,rest:0,tOn:8,tOff:60,cols:[['رمادي','#3e4146'],['بني','#64401f'],['أخضر','#2f5236'],['ياقوتي','#7a1f3d'],['سافير','#3f8fd0']]}
 };
 S.tint='none';S.tcol=0;S.dk=0;S.ever=false;S.sun='auto';S.spd=5;let liveB=0,tLast=0,tRaf=0,lastUi=0;
 function exposure(){
   if(S.tint==='none')return 0;
   if(S.sun==='sun')return 1;if(S.sun==='shade')return 0;
   if(SRC==='live'||SRC==='photo')return liveB>.62?1:0;
-  if(SRC==='scene'){if(S.scene==='door')return clamp((S.gx-(SW/2-4))/8,0,1);if(S.scene==='car')return .12}
+  if(SRC==='scene'){if(S.scene==='door'){const hw=26*K;return clamp((S.gx+hw-SW/2)/(2*hw),0,1)}if(S.scene==='car')return .12}
   return 0;
 }
 function tintTarget(){const t=TINTS[S.tint];if(!t)return 0;const e=exposure();if(e>.5)S.ever=true;return Math.max(t.max*e,S.ever?t.rest:0)}
@@ -1038,8 +1038,8 @@ function fmtT(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(
 function tintUi(tg){
   const el=$('tStat');if(S.tint==='none'){el.classList.remove('on');return}
   const T=TINTS[S.tint],c=tintCol(),pct=Math.round(S.dk*100),up=tg>S.dk+.01,down=tg<S.dk-.01;
-  let eta='';if(up||down){const tau=up?T.tOn:T.tOff,rem=-tau*Math.log(Math.max(.01,Math.abs(tg-S.dk)/0.02))*-1;eta=' · '+(up?'بيغمق':'بيصفى')+' · '+fmtT(Math.max(0,rem))}
-  el.innerHTML='<i style="background:'+c[1]+'"></i>'+T.name+' · '+c[0]+' · <b>'+pct+'%</b> '+(exposure()>.5?'☀️':'🏠')+eta+'<span class="tb"><span style="width:'+pct+'%;background:'+c[1]+'"></span></span>';
+  const eta=up?' · بيغمق…':down?' · بيصفى…':'';
+  el.innerHTML='<i style="background:'+c[1]+'"></i>'+T.name+' · '+c[0]+' · <b>'+pct+'%</b> '+(exposure()>.5?'☀️':'🏠')+eta+'<small class="tf">'+T.fact+'</small><span class="tb"><span style="width:'+pct+'%;background:'+c[1]+'"></span></span>';
   el.classList.add('on');
 }
 function tintPanel(){
@@ -1071,7 +1071,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=36;
+const VER=37;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
