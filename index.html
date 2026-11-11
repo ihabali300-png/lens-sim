@@ -241,7 +241,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v69</div>
+  <div id="ver">v70</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -320,7 +320,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 69 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 70 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -689,7 +689,7 @@ function blurChain(){
 }
 function coverInto(el,w,h,turn){
   const c=sharp.getContext('2d');c.setTransform(1,0,0,1,0,0);
-  const W=sharp.width,ew=turn?h:w,eh=turn?w:h,s=Math.max(W/ew,sharp.height/eh)*(ew>eh?1.35:1); /* landscape frames get the same comfortable zoom as portrait ones */
+  const W=sharp.width,ew=turn?h:w,eh=turn?w:h,s=Math.max(W/ew,sharp.height/eh)*(ew>eh?(SRC==='live'?1.15:1.35):1); /* landscape frames get the same comfortable zoom as portrait ones */
   if(turn){ /* screen is locked upright but the view is turned sideways: turn the camera frame to match */
     c.save();c.translate(W/2,sharp.height/2);c.rotate(-Math.PI/2);c.drawImage(el,-w*s/2,-h*s/2,w*s,h*s);c.restore();
   } else c.drawImage(el,(W-w*s)/2,(sharp.height-h*s)/2,w*s,h*s);
@@ -698,17 +698,18 @@ function coverInto(el,w,h,turn){
 function msg(t){const m=$('camMsg');m.textContent=t||'';m.hidden=!t}
 function stopLive(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if(vid){try{vid.pause();vid.srcObject=null}catch(_){}vid=null}if(typeof syncSrc==='function')syncSrc()}
 /* live loop: one render per new camera frame (max ~30/s, not 120/s on fast screens), resolution adapts to the phone's speed */
-let lastT=0,PERF=1.5,pEma=16,pN=0;
+let lastT=0,PERF=2,pEma=16,pN=0;
 function loop(now){if(SRC!=='live')return;raf=requestAnimationFrame(loop);now=now||performance.now();
   if(now-lastT<31||vid.readyState<2)return;lastT=now;
   const t0=performance.now();coverInto(vid,vid.videoWidth,vid.videoHeight,rot);draw();const dt=performance.now()-t0;
   pEma=pEma*.85+dt*.15;if(++pN>20){pN=0;
     if(pEma>30&&PERF>1){PERF=Math.max(1,PERF-.15);layout()}
-    else if(pEma<11&&PERF<1.5){PERF=Math.min(1.5,PERF+.1);layout()}}}
+    else if(pEma<16&&PERF<2.25){PERF=Math.min(2.25,PERF+.25);layout()}}}
 $('live').addEventListener('click',async()=>{
   msg('');
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});
+    try{const tr=stream.getVideoTracks()[0],cp=tr.getCapabilities?tr.getCapabilities():{};const adv={};if(cp.focusMode&&cp.focusMode.includes('continuous'))adv.focusMode='continuous';if(cp.exposureMode&&cp.exposureMode.includes('continuous'))adv.exposureMode='continuous';if(cp.whiteBalanceMode&&cp.whiteBalanceMode.includes('continuous'))adv.whiteBalanceMode='continuous';if(Object.keys(adv).length)tr.applyConstraints({advanced:[adv]}).catch(()=>{})}catch(_){}
     vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.srcObject=stream;await vid.play();
     SRC='live';srcRes();syncSrc();depKick(true);lastT=0;pEma=16;layout();loop();
   }catch(e){stopLive();
@@ -895,7 +896,7 @@ function draw(){
     ctx.restore();
   });
 }
-function SF(){return SRC==='live'?Math.max(5,Math.min(SCL,Math.round(1400/SW))):SCL}
+function SF(){return SRC==='live'?Math.max(6,Math.min(10,Math.round(2000/SW))):SCL}
 function srcRes(){const f=SF();if(sharp.width!==f*SW||sharp.height!==f*90){sharp.width=f*SW;sharp.height=f*90}}
 function setSW(w){
   const oldC=SW/2;SW=w;GX=Math.round(96*SW/160);
@@ -1347,8 +1348,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=69;
-const NOTE='الاستجماتيزم بقى واقعي: لحد درجة الحواف بتنعم بس، ومن درجة لـ 2.5 بيظهر ظل خفيف|صورة الكاميرا الحية رجعت حادة|تأثير العمق الذكي بقى أوضح وأسرع';
+const VER=70;
+const NOTE='الكاميرا الحية بقت بدقة Full HD بدل HD|الرسم على الشاشة بقى بدقة أعلى، فالصورة أحدّ|فوكس وإضاءة تلقائية مستمرة للكاميرا';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
