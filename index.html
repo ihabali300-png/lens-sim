@@ -82,11 +82,14 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
-#fsRx{display:none;position:absolute;right:8px;top:50%;transform:translateY(-55%);z-index:4;flex-direction:column;gap:6px;direction:ltr}
+#fsRx{display:none;position:absolute;right:8px;top:8px;z-index:4;flex-direction:column;gap:6px;direction:ltr}
 body.fs.rx #fsRx{display:flex}
-#fsRx label{display:flex;align-items:center;gap:6px;background:rgba(70,76,90,.88);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:3px 6px}
-#fsRx b{font-size:12px;color:#e8ecf4;width:38px;text-align:left}
-#fsRx select{background:#5a6070;color:#fff;border:0;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:700;width:78px;direction:ltr;flex:none}
+#fsRx .wr{display:flex;align-items:center;gap:4px;background:rgba(60,66,80,.42);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:0 4px 0 8px;backdrop-filter:blur(2px)}
+#fsRx b{font-size:11.5px;color:#e8ecf4;width:36px;text-align:left}
+.wh{height:72px;width:70px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:24px 0;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(transparent,#000 35%,#000 65%,transparent);touch-action:pan-y;overscroll-behavior:contain}
+.wh::-webkit-scrollbar{display:none}
+.wh div{height:24px;line-height:24px;text-align:center;scroll-snap-align:center;color:rgba(255,255,255,.55);font-size:14px;font-variant-numeric:tabular-nums}
+.wh div.on{color:#fff;font-weight:800;font-size:16px}
 .check{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--ink)}.check input{width:20px;height:20px;accent-color:var(--accent)}
 #home{position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at 50% 30%,#22306a,#0d1430 70%);display:flex;align-items:center;justify-content:center;padding:20px}
 #home[hidden]{display:none}
@@ -206,12 +209,12 @@ body.fs.split .peek{display:none}
     <button id="fsExit">خروج</button>
   </div>
   <div id="fsRx">
-    <label><b>SPH</b><select id="qSph"></select></label>
-    <label><b>CYL</b><select id="qCyl"></select></label>
-    <label><b>A</b><select id="qAx"></select></label>
-    <label><b>Index</b><select id="qIdx"><option value="1.5">1.50</option><option value="1.56">1.56</option><option value="1.6">1.60</option><option value="1.67">1.67</option><option value="1.74">1.74</option></select></label>
+    <div class="wr"><b>SPH</b><div class="wh" id="wSph"></div></div>
+    <div class="wr"><b>CYL</b><div class="wh" id="wCyl"></div></div>
+    <div class="wr"><b>A</b><div class="wh" id="wAx"></div></div>
+    <div class="wr"><b>Index</b><div class="wh" id="wIdx"></div></div>
   </div>
-  <div id="ver">v50</div>
+  <div id="ver">v51</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -290,7 +293,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 50 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 51 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -858,18 +861,35 @@ $('one').addEventListener('click',()=>{S.cmpOn=false;S.cmp=-1;render()});
 $('two').addEventListener('click',()=>{S.cmpOn=true;render()});
 $('add').addEventListener('input',e=>{S.add=+e.target.value;render()});
 $('des').addEventListener('change',e=>{S.dOv=+e.target.value;render()});
-$('rxOn').addEventListener('change',e=>{S.rxOn=e.target.checked;$('rxBox').hidden=!S.rxOn;
+$('rxOn').addEventListener('change',e=>{setTimeout(syncQ,50);S.rxOn=e.target.checked;$('rxBox').hidden=!S.rxOn;
   if(S.rxOn){[S.sph,S.cyl,S.axis]=S.rxSave;$('sph').value=S.sph;$('cyl').value=S.cyl;$('axis').value=S.axis;S.idx=+$('idx').value}
   else{S.rxSave=[S.sph,S.cyl,S.axis];S.sph=0;S.cyl=0;S.axis=180;S.idx=1.5}
   render()});
 $('idx').addEventListener('change',e=>{S.idx=+e.target.value;render()});
 const fq=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
-(function(){let o='';for(let v=8;v>=-10;v-=.25)o+='<option value="'+v+'">'+fq(v)+'</option>';$('qSph').innerHTML=o;
- o='';for(let v=0;v>=-6;v-=.25)o+='<option value="'+v+'">'+fq(v)+'</option>';$('qCyl').innerHTML=o;
- o='';for(let v=0;v<=180;v+=5)o+='<option value="'+v+'">'+v+'°</option>';$('qAx').innerHTML=o})();
-function syncQ(){document.body.classList.toggle('rx',S.rxOn);$('qSph').value=S.sph;$('qCyl').value=S.cyl;$('qAx').value=S.axis;$('qIdx').value=S.idx}
-[['qSph','sph'],['qCyl','cyl'],['qAx','axis']].forEach(([q,k])=>$(q).addEventListener('change',e=>{S[k]=+e.target.value;$(k).value=S[k];render()}));
-$('qIdx').addEventListener('change',e=>{S.idx=+e.target.value;$('idx').value=e.target.value;render()});
+function syncQ(){document.body.classList.toggle('rx',S.rxOn);if(!WHEELS.wSph)return;WHEELS.wSph.set(S.sph);WHEELS.wCyl.set(S.cyl);WHEELS.wAx.set(S.axis);WHEELS.wIdx.set(S.idx)}
+/* ---------- wheel pickers for the quick prescription box ---------- */
+const WH_H=24,WHEELS={};
+function mkWheel(id,key,vals,fmt,after){
+  const el=$(id);el.innerHTML=vals.map(v=>'<div>'+fmt(v)+'</div>').join('');
+  const W={el,vals,key,cur:-1,busy:0,t:0};WHEELS[id]=W;
+  const mark=i=>{[...el.children].forEach((c,k)=>c.classList.toggle('on',k===i))};
+  W.set=v=>{let i=vals.findIndex(x=>Math.abs(x-v)<1e-6);if(i<0)i=0;W.cur=i;mark(i);if(!W.busy)el.scrollTop=i*WH_H};
+  el.addEventListener('scroll',()=>{
+    W.busy=1;clearTimeout(W.t);
+    const i=clamp(Math.round(el.scrollTop/WH_H),0,vals.length-1);
+    if(i!==W.cur){W.cur=i;mark(i);try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}S[key]=vals[i];after(vals[i]);render()}
+    W.t=setTimeout(()=>{W.busy=0;el.scrollTo({top:W.cur*WH_H,behavior:'smooth'})},140);
+  },{passive:true});
+  return W;
+}
+(function(){
+  const r=(a,b,st)=>{const o=[];for(let v=a;st>0?v<=b+1e-9:v>=b-1e-9;v+=st)o.push(Math.round(v*100)/100);return o};
+  mkWheel('wSph','sph',r(8,-10,-.25),fq,v=>{$('sph').value=v});
+  mkWheel('wCyl','cyl',r(0,-6,-.25),fq,v=>{$('cyl').value=v});
+  mkWheel('wAx','axis',r(0,180,5),v=>v+'°',v=>{$('axis').value=v});
+  mkWheel('wIdx','idx',[1.5,1.56,1.6,1.67,1.74],v=>v.toFixed(2),v=>{$('idx').value=v});
+})();
 ['sph','cyl','axis'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render()}));
 function syncZ(){const Z=S.zones,any=Z.far||Z.mid||Z.near;
   document.querySelectorAll('#zbtns button').forEach(b=>b.setAttribute('aria-pressed',Z[b.dataset.z]));
@@ -905,6 +925,7 @@ function syncSplit(){
 }
 function enterFs(){goHash(MODE+'-full')}
 function doEnterFs(){
+  setTimeout(()=>{if(typeof syncQ==='function')syncQ()},60);
   if(S.cmpOn&&S.cmp<0)S.cmp=S.i<LENSES.length-1?S.i+1:S.i-1;
   document.body.classList.add('fs');syncSplit();layout();
   /* no browser fullscreen API: Chrome shows an exit-fullscreen notice with it. Installed app opens full screen by itself. */
@@ -1219,7 +1240,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=50;
+const VER=51;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
