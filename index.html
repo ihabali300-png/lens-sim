@@ -82,6 +82,16 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+#home{position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at 50% 30%,#22306a,#0d1430 70%);display:flex;align-items:center;justify-content:center;padding:20px}
+#home[hidden]{display:none}
+.hbox{width:min(440px,100%);display:flex;flex-direction:column;gap:14px;text-align:center}
+.hbox h1{margin:0 0 6px}.hsub{margin:0;color:var(--mute);font-size:13px;letter-spacing:.5px}
+.hb{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:right;padding:18px;border-radius:18px;background:var(--panel);border:2px solid var(--line)}
+.hb span{grid-row:1/3;font-size:38px}.hb b{font-family:var(--display);font-size:24px;color:var(--accent)}.hb small{color:var(--mute);font-size:13.5px}
+.hb:hover,.hb:focus-visible{border-color:var(--accent)}
+.mtag{background:var(--accent);color:#231a04;font-weight:700;border-radius:20px;padding:3px 12px;font-size:13px}
+#homeB{padding:5px 10px;font-size:13px}
+body.sv #zAll,body.sv #zbtns,body.sv #zHint,body.sv #fsZ,body.sv .addRow{display:none}
 #tDots{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:10px}
 .dot,.dot[aria-pressed="true"]{background:none!important;border:0;color:var(--ink)!important;padding:2px;display:flex;flex-direction:column;align-items:center;gap:3px;width:58px}
 .dot i{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.25);display:block}
@@ -144,8 +154,17 @@ body.fs.split .peek{display:none}
 </style>
 </head>
 <body>
+<div id="home">
+  <div class="hbox">
+    <p class="hsub">IHAB Progressive Simulator</p>
+    <h1>اختار نوع العدسة</h1>
+    <button data-m="sv" class="hb"><span>👓</span><b>سنجل فيجن</b><small>عدسة لمسافة واحدة: بعيد أو قريب</small></button>
+    <button data-m="pal" class="hb"><span>🔭</span><b>بروجرسيف</b><small>عدسة واحدة للبعيد والمتوسط والقريب</small></button>
+  </div>
+</div>
 <main>
 <header>
+  <div class="row" style="justify-content:space-between"><span id="modeTag" class="mtag"></span><button id="homeB">🔁 تغيير نوع العدسة</button></div>
   <h1>جرّب عدستك قبل ما تلبسها</h1>
   <p class="sub">حرّك العدسة على المنظر، وشوف مجال الرؤية مع كل عدسة.</p>
 </header>
@@ -180,7 +199,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v41</div>
+  <div id="ver">v42</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -220,7 +239,7 @@ body.fs.split .peek{display:none}
     <button id="one" aria-pressed="true">عدسة واحدة</button>
     <button id="two" aria-pressed="false">مقارنة بين عدستين</button>
   </div>
-  <p class="sub" style="margin:10px 0 6px">مناطق الرؤية: الزرار الكبير يظهرها كلها أو يخفيها، والدوسة على أي منطقة في العدسة تظهرها أو تخفيها لوحدها.</p>
+  <p class="sub" id="zHint" style="margin:10px 0 6px">مناطق الرؤية: الزرار الكبير يظهرها كلها أو يخفيها، والدوسة على أي منطقة في العدسة تظهرها أو تخفيها لوحدها.</p>
   <button id="zAll" class="big" style="margin-bottom:6px" aria-pressed="false">إظهار كل المناطق</button>
   <div class="grid3" id="zbtns">
     <button data-z="far" aria-pressed="false">🔵 بعيد</button>
@@ -248,12 +267,12 @@ body.fs.split .peek{display:none}
   <input type="range" id="cyl" min="-6" max="0" step="0.25" value="0">
   <p><label for="axis">المحور (أكسيس):</label> <output id="oAxis"></output></p>
   <input type="range" id="axis" min="0" max="180" step="5" value="180">
-  <p><label for="add">قوة الإضافة للعميل:</label> <output id="oAdd"></output></p>
-  <input type="range" id="add" min="0.25" max="4" step="0.25" value="2">
+  <p class="addRow"><label for="add">قوة الإضافة للعميل:</label> <output id="oAdd"></output></p>
+  <input class="addRow" type="range" id="add" min="0.25" max="4" step="0.25" value="2">
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 41 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 42 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -330,7 +349,7 @@ const PROT=[
  {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['PathVision','ممر أنعم وتمايل أقل'],['دبل أسفريك','عدسة أرفع وأفلت'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']]},
  {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','محسوبة نقطة بنقطة على مقاسك'],['NeoAdapt','بتتكيف مع عاداتك ووضعيتك'],['UltraSlim','أنحف عدسة'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']]}
 ];
-const LENSES=[
+let LENSES=[
  {b:0,ar:'بروتكتد',en:'Protected',d:0,pr:599,cf:.80,nf:.66,df:.66,gk:.25,field:22,adapt:35,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
  {b:0,ar:'بريميوم',en:'Premium',d:0,pr:799,cf:.88,nf:.72,df:.74,gk:.235,field:28,adapt:40,tag:'راحة أكثر في القراءة والشاشة.',ben:B_PRM},
  {b:0,ar:'أوبتيما',en:'Optima',d:0,pr:999,cf:.96,nf:.78,df:.82,gk:.22,field:34,adapt:45,tag:'أفضل ما في الفئة الكورية.',ben:B_OPT},
@@ -342,6 +361,8 @@ const LENSES=[
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
 LENSES.forEach((t,k)=>Object.assign(t,EXTRA[k],PROT[k]));
+let MODE='pal';
+const isSV=()=>MODE==='sv';
 const S={scene:'office',pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 let K=1.6,SW=160,GX=96;const L=14,M=2.2,NP=3.2,GY=54;
 const $=id=>document.getElementById(id);
@@ -544,10 +565,10 @@ function computeMasks(TA,TB){
   for(let j=0;j<GY;j++){const v=(j+.5)/GY*90,yc=-(v-S.gy)/K,y=yc-3,ey=Math.pow(Math.abs(yc)/18,NP);
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*SW,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
-        const T=x>0?TB:TA,d=Math.abs(x)-halfW(T,y);
+        const T=x>0?TB:TA,d=isSV()?Math.hypot(x,(y+3)/.85)-T.rc*rxNarrow(T):Math.abs(x)-halfW(T,y);
         const rxb=1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl));
-        const ba=d>0?clamp(d*S.add*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
-        const bd=SRC==='scene'?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
+        const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
+        const bd=SRC==='scene'&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
         be=Math.max(SRC==='scene'?ba:ba*1.4,bd);
       } else be=SRC==='scene'?.3+.5*q:0;
       d1[k+3]=255*clamp(be/.45,0,1);d2[k+3]=255*clamp((be-.45)/.55,0,1);
@@ -615,6 +636,7 @@ function magXY(){
   return [m(S.sph),m(S.sph+S.cyl)];
 }
 function edgePath(c,T,side,y0,y1){
+  if(isSV()){const R0=T.rc*rxNarrow(T),n=60;for(let j=0;j<=n;j++){const a=-Math.PI/2+Math.PI*j/n,u=S.gx+side*R0*Math.cos(a)*K,v=S.gy-R0*.85*Math.sin(a)*K;j?c.lineTo(u,v):c.moveTo(u,v)}return}
   const n=70;
   for(let j=0;j<=n;j++){const y=y0+(y1-y0)*j/n,u=S.gx+side*halfW(T,y)*K,v=S.gy-(y+3)*K;j?c.lineTo(u,v):c.moveTo(u,v)}
 }
@@ -795,6 +817,7 @@ function toggleZ(k){S.zones[k]=!S.zones[k];syncZ()}
 $('zbtns').addEventListener('click',e=>{const b=e.target.closest('button');if(b)toggleZ(b.dataset.z)});
 $('fsZ').addEventListener('click',allZ);$('zAll').addEventListener('click',allZ);
 function zoneAt(e){
+  if(isSV())return null;
   const r=cv.getBoundingClientRect();let x,y;
   if(rot){x=e.clientY-r.top;y=r.right-e.clientX}else{x=e.clientX-r.left;y=e.clientY-r.top}
   const P=PANELS.find(q=>x>=q.x0&&x<q.x0+q.w)||PANELS[0];if(!P)return null;
@@ -817,12 +840,14 @@ function syncSplit(){
   document.body.classList.toggle('split',isSplit());
   $('selA').value=S.i;if(S.cmp>=0)$('selB').value=S.cmp;
 }
-function enterFs(){
+function enterFs(){goHash(MODE+'-full')}
+function doEnterFs(){
   if(S.cmpOn&&S.cmp<0)S.cmp=S.i<LENSES.length-1?S.i+1:S.i-1;
   document.body.classList.add('fs');syncSplit();layout();
   /* no browser fullscreen API: Chrome shows an exit-fullscreen notice with it. Installed app opens full screen by itself. */
 }
-function exitFs(){
+function exitFs(){if(location.hash.endsWith('-full'))history.back();else doExitFs()}
+function doExitFs(){
   document.body.classList.remove('fs','split');
   try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(_){}
   layout();
@@ -883,7 +908,7 @@ const comfItems=T=>COMF_L.map((l,k)=>({t:l,n:[T.r[1],T.r[2],T.r[3],T.r[4]][k]}))
 const stTxt=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 function rxTxt(){const sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);return (S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':''}
 function cardText(T){
-  const D=desOf(T),L=['👓 *كارت عدستك*','*'+full(T)+'*','صناعة '+BRANDS[T.b].from+' · تصميم '+D.ar,'🛡️ '+T.w,'',
+  const D=desOf(T),L=['👓 *كارت عدستك*','*'+full(T)+'*',MODE_AR()+' · صناعة '+BRANDS[T.b].from+' · تصميم '+D.ar,'🛡️ '+T.w,'',
     '*🛡️ طبقات الحماية: '+T.lv+'*'].concat(protItems(T).map(o=>(o.hi?'✅ ':'▫️ ')+o.t.replace('✓ ','')+'  '+stTxt(o.n)),['','*😌 الراحة*'],comfItems(T).map(o=>'▫️ '+o.t+'  '+stTxt(o.n)),['','*⚙️ التقنيات*'],T.tech.map(([n,b])=>'✓ '+n+': '+b));
   if(T.lux)L.push('',T.lux.t+': '+T.lux.l.join('، '));
   const rx=rxTxt();if(rx)L.push('','المقاس: '+rx);
@@ -901,7 +926,7 @@ function cardPNG(T){
   const T_=(s,X,Y,sz,col,wt,f,al)=>{x.font=(wt||500)+' '+sz+'px '+(f||F);x.fillStyle=col;x.textAlign=al||'right';x.fillText(s,X,Y)};
   const stars=(n,X,Y,sz)=>{x.direction='ltr';x.textAlign='left';x.font='700 '+sz+'px '+F;x.fillStyle='#ffc93c';x.fillText('★'.repeat(n),X,Y);const w=x.measureText('★'.repeat(n)).width;x.fillStyle='rgba(255,255,255,.2)';x.fillText('★'.repeat(5-n),X+w,Y);x.direction='rtl'};
   let y=P+30;
-  T_('👓 كارت عدستك',W-P,y,40,'#a4b0d6',700,FD);y+=70;
+  T_('👓 كارت عدستك · '+MODE_AR(),W-P,y,40,'#a4b0d6',700,FD);y+=70;
   T_(full(T),W-P,y,58,'#f0c36a',700,FD);y+=66;
   T_('صناعة '+BRANDS[T.b].from+' · '+D.ic+' '+D.ar+' · 🛡️ '+T.w,W-P,y,30,'#dce4fb',500);y+=70;
   const grid=(items,top)=>{const cw=(W-2*P-16)/2;items.forEach((o,k)=>{const col=k%2,row=Math.floor(k/2),X=W-P-cw-(col*(cw+16)),Y=top+row*88;R(X,Y,cw,74,16,o.hi?'rgba(46,204,113,.18)':'#222d5e');if(o.hi){x.strokeStyle='#2ecc71';x.lineWidth=3;x.stroke()}T_(o.t,X+cw-22,Y+37,o.t.length>16?26:30,o.hi?'#6ee7a0':'#f1f4fc',o.hi?700:600);stars(o.n,X+20,Y+38,30)});return top+Math.ceil(items.length/2)*88};
@@ -941,7 +966,7 @@ const CATS=[
 function cmpScores(A,B){return CATS.map(([ic,l,f])=>{const a=f(A),b=f(B);return {ic,l,a,b,w:Math.abs(a-b)<.25?0:(a>b?1:-1)}})}
 function cmpText(A,B){
   const sc=cmpScores(A,B),ta=sc.reduce((s,o)=>s+o.a,0),tb=sc.reduce((s,o)=>s+o.b,0),r=v=>Math.round(v);
-  const L=['⚖️ *مقارنة العدسات*','🅰️ *'+full(A)+'* · '+desOf(A).ar+' · '+A.w,'🅱️ *'+full(B)+'* · '+desOf(B).ar+' · '+B.w,''];
+  const L=['⚖️ *مقارنة العدسات · '+MODE_AR()+'*','🅰️ *'+full(A)+'* · '+desOf(A).ar+' · '+A.w,'🅱️ *'+full(B)+'* · '+desOf(B).ar+' · '+B.w,''];
   sc.forEach(o=>L.push(o.ic+' *'+o.l+'*','   🅰️ '+stTxt(r(o.a))+(o.w>0?'  ✅':''),'   🅱️ '+stTxt(r(o.b))+(o.w<0?'  ✅':'')));
   L.push('','⚖️ الكفة بتميل لـ: *'+(Math.abs(ta-tb)<.3?'الاتنين متساويين':full(ta>tb?A:B))+'*');
   [[A,'🅰️'],[B,'🅱️']].forEach(([T,k])=>{L.push('',k+' التقنيات: '+T.tech.map(t=>t[0]).join('، '));if(T.lux)L.push(k+' '+T.lux.t)});
@@ -959,7 +984,7 @@ function cmpPNG(A,B){
   const T_=(s,X,Y,sz,col,wt,f,al)=>{x.font=(wt||500)+' '+sz+'px '+(f||F);x.fillStyle=col;x.textAlign=al||'center';x.fillText(s,X,Y)};
   const stars=(n,cx,Y,sz)=>{n=Math.round(n);x.direction='ltr';x.font='700 '+sz+'px '+F;const s1='★'.repeat(n),s2='★'.repeat(5-n),w1=x.measureText(s1).width,w2=x.measureText(s2).width,X=cx-(w1+w2)/2;x.textAlign='left';x.fillStyle='#ffc93c';x.fillText(s1,X,Y);x.fillStyle='rgba(255,255,255,.2)';x.fillText(s2,X+w1,Y);x.direction='rtl'};
   const cA=W*0.75,cB=W*0.25,colA='#7fd8ff',colB='#ff9f5a';
-  T_('⚖️ مقارنة العدسات',W/2,70,46,'#f0c36a',700,FD);
+  T_('⚖️ مقارنة العدسات · '+MODE_AR(),W/2,70,46,'#f0c36a',700,FD);
   let y=140;
   [[A,cA,colA,'🅰️'],[B,cB,colB,'🅱️']].forEach(([T,cx,col,k])=>{R(cx-245,y,490,200,22,'#1e2a58');x.strokeStyle=col;x.lineWidth=3;x.stroke();
     T_(k+' '+BRANDS[T.b].ar,cx,y+42,30,'#a4b0d6',600);T_(T.ar,cx,y+92,46,col,700,FD);T_(desOf(T).ic+' '+desOf(T).ar+' · '+BRANDS[T.b].from,cx,y+140,26,'#dce4fb',500);T_('🛡️ '+T.w.replace('على عيوب التصنيع','· عيوب التصنيع'),cx,y+178,22,'#a4b0d6',500)});
@@ -1080,9 +1105,59 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('resize',layout);
 paintScene();render();layout();
+/* ---------- single vision lenses ---------- */
+const LENS_SV=[
+ {b:0,ar:'ديجيتال بروتكت',en:'Digital Protect',d:0,pr:299,rc:12,gk:.22,tag:'رؤية واضحة يومية مع حماية خفيفة من الشاشات.',
+  r:[3,2,1,3,2],lv:'أساسية',p:[2,2,3,1,1,1],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي','رؤية واضحة للاستخدام اليومي'],['بلو لايت خفيف','حماية بسيطة من الشاشات']]},
+ {b:1,ar:'بريمير',en:'Premier',d:0,pr:400,rc:13.5,gk:.21,tag:'عدسة يابانية موثوقة مع حماية من الضوء الأزرق.',
+  r:[4,3,2,3,2],lv:'متوسطة',p:[3,3,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['صناعة يابانية','جودة ثابتة ورؤية مريحة'],['فلتر الضوء الأزرق','راحة أكتر قدام الشاشات'],['طبقة مضادة للانعكاس','رؤية أوضح وإبهار أقل']]},
+ {b:1,ar:'إيليت',en:'Elite',d:1,pr:700,rc:16,gk:.19,tag:'عدسة أرفع وأوضح على الأطراف.',
+  r:[4,4,3,4,3],lv:'متوسطة',p:[4,3,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم أسفريك','عدسة أرفع وأوضح على الجناب'],['فلتر الضوء الأزرق','راحة أكتر قدام الشاشات'],['طبقة سهلة التنظيف','بتقاوم البقع والبصمات']]},
+ {b:2,ar:'بريستيج',en:'Prestige',d:2,pr:900,rc:18.5,gk:.165,tag:'وضوح ألماني مريح لحياتك اليومية.',
+  r:[5,4,4,4,4],lv:'متقدمة',p:[4,4,5,4,4,4],w:'ضمان سنتين على عيوب التصنيع',tech:[['دبل أسفريك','عدسة أرفع وأفلت'],['Slim Tech','عدسة أنحف وأخف'],['NanoClear Plus','مقاومة للضباب والخدش'],['ClearBlue','فلتر ذكي للضوء الأزرق']]},
+ {b:2,ar:'سيجنتشر',en:'Signature',d:2,pr:1200,rc:19.5,gk:.15,tag:'وضوح حاد مع طبقة حماية كاملة.',
+  r:[5,4,5,5,4],lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['دبل أسفريك','عدسة أرفع وأفلت'],['Slim Tech','عدسة أنحف وأخف'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']],
+  lux:{t:'✨ رفاهية الرؤية',l:['وضوح حاد لحد الأطراف','راحة طول اليوم قدام الشاشات','عدسة نضيفة دايماً']}},
+ {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:1600,rc:23,gk:.12,tag:'دقة رقمية محسوبة على مقاسك نقطة بنقطة.',
+  r:[5,5,5,5,5],lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','وضوح كامل لحد أطراف العدسة'],['UltraSlim','أنحف عدسة'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']],
+  lux:{t:'👑 رفاهية الرؤية القصوى',l:['أوسع مجال واضح في كل العدسات','أنحف وأخف عدسة','تركيز فوري من غير إجهاد']}}
+];
+LENS_SV.forEach(t=>{t.key=t.tech.map(x=>x[0]+': '+x[1]);t.ben=t.key;t.cf=1;t.nf=1;t.df=1;t.field=Math.round(t.rc/23*100);t.adapt=t.field});
+const LENS_PAL=LENSES;
+const COMF_SV=['اتساع المجال الواضح','وضوح الأطراف','راحة الشاشة','خفة ونحافة'];
+const COMF_PAL=COMF_L.slice();
+const MODE_AR=()=>isSV()?'سنجل فيجن':'بروجرسيف';
+function setMode(m){
+  if(m===MODE&&document.body.dataset.ready)return;
+  document.body.dataset.ready='1';MODE=m;
+  LENSES=isSV()?LENS_SV:LENS_PAL;
+  COMF_L.splice(0,COMF_L.length,...(isSV()?COMF_SV:COMF_PAL));
+  CATS[2][1]=isSV()?'الخفة والنحافة':'سرعة التعوّد';
+  S.i=isSV()?4:7;S.cmp=-1;S.vb=-1;S.dOv=-1;S.cmpOn=false;S.zones.far=S.zones.mid=S.zones.near=false;
+  document.body.classList.toggle('sv',isSV());
+  $('modeTag').textContent=isSV()?'👓 سنجل فيجن':'🔭 بروجرسيف';
+  $('selA').innerHTML=lensOpts();$('selB').innerHTML=lensOpts();
+  $('cmA').innerHTML=lensOptsPlain();$('cmB').innerHTML=lensOptsPlain();
+  render();if(typeof syncZ==='function')syncZ();layout();
+}
+/* ---------- start screen + back button ---------- */
+function goHash(h){if(location.hash.slice(1)!==h)location.hash=h;else route()}
+function route(){
+  const h=location.hash.slice(1),m=h.split('-')[0];
+  if(m==='sv'||m==='pal'){
+    $('home').hidden=true;setMode(m);
+    const full=h.endsWith('-full'),inFs=document.body.classList.contains('fs');
+    if(full&&!inFs)doEnterFs();else if(!full&&inFs)doExitFs();
+  } else {if(document.body.classList.contains('fs'))doExitFs();$('home').hidden=false}
+}
+window.addEventListener('hashchange',route);
+document.querySelectorAll('#home [data-m]').forEach(b=>b.addEventListener('click',()=>goHash(b.dataset.m)));
+$('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $('home').hidden=false});
+
+route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=41;
-try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
+const VER=42;
+try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
 </body>
