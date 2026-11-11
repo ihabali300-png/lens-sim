@@ -110,7 +110,7 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v22</div>
+  <div id="ver">v23</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -161,7 +161,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 22 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 23 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -595,6 +595,9 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('resize',layout);
 paintScene();render();layout();
+/* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
+const VER=23;
+try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
 </body>
