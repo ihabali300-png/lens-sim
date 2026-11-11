@@ -159,7 +159,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v32</div>
+  <div id="ver">v33</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -219,7 +219,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 32 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 33 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="sum" hidden role="dialog" aria-modal="true" aria-labelledby="sumT">
@@ -801,7 +801,7 @@ const comfItems=T=>COMF_L.map((l,k)=>({t:l,n:[T.r[1],T.r[2],T.r[3],T.r[4]][k]}))
 const stTxt=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 function rxTxt(){const sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);return (S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':''}
 function cardText(T){
-  const D=desOf(T),L=['👓 *كارت عدستك*','*'+full(T)+'* · '+T.pr+' ريال','صناعة '+BRANDS[T.b].from+' · تصميم '+D.ar,'🛡️ '+T.w,'',
+  const D=desOf(T),L=['👓 *كارت عدستك*','*'+full(T)+'*','صناعة '+BRANDS[T.b].from+' · تصميم '+D.ar,'🛡️ '+T.w,'',
     '*🛡️ طبقات الحماية: '+T.lv+'*'].concat(protItems(T).map(o=>(o.hi?'🔴 ':'▫️ ')+o.t+'  '+stTxt(o.n)),['','*😌 الراحة*'],comfItems(T).map(o=>'▫️ '+o.t+'  '+stTxt(o.n)),['','*⚙️ التقنيات*'],T.tech.map(([n,b])=>'✓ '+n+': '+b));
   if(T.lux)L.push('',T.lux.t+': '+T.lux.l.join('، '));
   const rx=rxTxt();if(rx)L.push('','المقاس: '+rx);
@@ -820,7 +820,7 @@ function cardPNG(T){
   const stars=(n,X,Y,sz)=>{x.direction='ltr';x.textAlign='left';x.font='700 '+sz+'px '+F;x.fillStyle='#ffc93c';x.fillText('★'.repeat(n),X,Y);const w=x.measureText('★'.repeat(n)).width;x.fillStyle='rgba(255,255,255,.2)';x.fillText('★'.repeat(5-n),X+w,Y);x.direction='rtl'};
   let y=P+30;
   T_('👓 كارت عدستك',W-P,y,40,'#a4b0d6',700,FD);y+=70;
-  T_(full(T),W-P,y,58,'#f0c36a',700,FD);T_(T.pr+' ريال',P,y,46,'#ffffff',700,F,'left');y+=66;
+  T_(full(T),W-P,y,58,'#f0c36a',700,FD);y+=66;
   T_('صناعة '+BRANDS[T.b].from+' · '+D.ic+' '+D.ar+' · 🛡️ '+T.w,W-P,y,30,'#dce4fb',500);y+=70;
   const grid=(items,top)=>{const cw=(W-2*P-16)/2;items.forEach((o,k)=>{const col=k%2,row=Math.floor(k/2),X=W-P-cw-(col*(cw+16)),Y=top+row*88;R(X,Y,cw,74,16,o.hi?'rgba(255,70,90,.22)':'#222d5e');if(o.hi){x.strokeStyle='#ff4d5e';x.lineWidth=3;x.stroke()}T_(o.t,X+cw-22,Y+37,o.t.length>16?26:30,o.hi?'#ff8a95':'#f1f4fc',o.hi?700:600);stars(o.n,X+20,Y+38,30)});return top+Math.ceil(items.length/2)*88};
   T_('🛡️ طبقات الحماية: '+T.lv,W-P,y,36,'#f0c36a',700,FD);y=grid(pi,y+30)+30;
@@ -859,7 +859,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=32;
+const VER=33;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
