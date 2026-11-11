@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.ihab.visionlab'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.ihab.visionlab'
+        minSdk 24
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('VCODE') ?: '1')
+        versionName '1.' + (System.getenv('VCODE') ?: '1')
+    }
+    signingConfigs {
+        release {
+            storeFile file('ihab-vision-lab.jks')
+            storePassword 'ihabvisionlab'
+            keyAlias 'ihab'
+            keyPassword 'ihabvisionlab'
+        }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.10.0' }
