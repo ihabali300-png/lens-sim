@@ -211,7 +211,7 @@ body.fs.split .peek{display:none}
     <label><b>A</b><select id="qAx"></select></label>
     <label><b>Index</b><select id="qIdx"><option value="1.5">1.50</option><option value="1.56">1.56</option><option value="1.6">1.60</option><option value="1.67">1.67</option><option value="1.74">1.74</option></select></label>
   </div>
-  <div id="ver">v48</div>
+  <div id="ver">v49</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -290,7 +290,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 48 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 49 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -590,7 +590,9 @@ function computeMasks(TA,TB){
         const rxb=(1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl)))*(1+(S.idx-1.5)*1.3);
         const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
         const bd=SRC==='scene'&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
-        be=Math.max(SRC==='scene'?ba:ba*1.4,bd);
+        /* single vision: edge blur comes from the prescription, so it is light at 0.00 and grows with power */
+        const svm=isSV()?.3+.7*Math.min(1,(Math.abs(S.sph)+Math.abs(S.cyl))/4):1;
+        be=Math.max((SRC==='scene'||isSV()?ba:ba*1.4)*svm,bd);
       } else be=SRC==='scene'?.3+.5*q:0;
       d1[k+3]=255*clamp(be/.45,0,1);d2[k+3]=255*clamp((be-.45)/.55,0,1);
     }}
@@ -1215,7 +1217,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=48;
+const VER=49;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
