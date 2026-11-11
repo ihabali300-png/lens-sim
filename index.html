@@ -211,7 +211,7 @@ body.fs.split .peek{display:none}
     <label><b>A</b><select id="qAx"></select></label>
     <label><b>Index</b><select id="qIdx"><option value="1.5">1.50</option><option value="1.56">1.56</option><option value="1.6">1.60</option><option value="1.67">1.67</option><option value="1.74">1.74</option></select></label>
   </div>
-  <div id="ver">v49</div>
+  <div id="ver">v50</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -290,7 +290,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 49 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 50 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -583,6 +583,8 @@ let cw=0,ch=0,sc=1,ox=0,oy=0,dpr=1,rot=false,nativeFs=false;
 let i1=m1.getContext('2d').createImageData(GX,GY),i2=m2.getContext('2d').createImageData(GX,GY);
 function computeMasks(TA,TB){
   const d1=i1.data,d2=i2.data;
+  /* outside the lens = the customer's eye without glasses: blur grows with the prescription */
+  const uncor=clamp(Math.abs(S.sph)*.16+Math.abs(S.cyl)*.11,0,1);
   for(let j=0;j<GY;j++){const v=(j+.5)/GY*90,yc=-(v-S.gy)/K,y=yc-3,ey=Math.pow(Math.abs(yc)/18,NP);
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*SW,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
       if(ey+Math.pow(Math.abs(x)/26,NP)<=1){
@@ -591,9 +593,9 @@ function computeMasks(TA,TB){
         const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
         const bd=SRC==='scene'&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
         /* single vision: edge blur comes from the prescription, so it is light at 0.00 and grows with power */
-        const svm=isSV()?.3+.7*Math.min(1,(Math.abs(S.sph)+Math.abs(S.cyl))/4):1;
+        const pw=Math.abs(S.sph)+Math.abs(S.cyl),svm=isSV()?(S.rxOn?Math.min(1,pw/4):.3+.7*Math.min(1,pw/4)):1;
         be=Math.max((SRC==='scene'||isSV()?ba:ba*1.4)*svm,bd);
-      } else be=SRC==='scene'?.3+.5*q:0;
+      } else be=S.rxOn?uncor:(SRC==='scene'?.3+.5*q:0);
       d1[k+3]=255*clamp(be/.45,0,1);d2[k+3]=255*clamp((be-.45)/.55,0,1);
     }}
   m1.getContext('2d').putImageData(i1,0,0);m2.getContext('2d').putImageData(i2,0,0);
@@ -719,7 +721,7 @@ function drawPanel(x0,w,TA,TB,split){
     if(side){ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();side<0?ctx.rect(0,0,cx,cv.height):ctx.rect(cx,0,cv.width-cx,cv.height);ctx.clip()}
     /* radial distortion: rings drawn from the edge inwards; stronger for simpler designs */
     /* straight lines stay straight inside the clear zone; past it they bend a little, less with better designs */
-    const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1),N=kd>.002?48:1;
+    const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1)*(S.rxOn?Math.min(1,(Math.abs(S.sph)+Math.abs(S.cyl))/4):1),N=Math.abs(kd)>.002?48:1;
     const cr=isSV()?T.rc*rxNarrow(T):Math.min(26,halfW(T,0)),t0=clamp(cr/26,.25,.92);
     for(let n=N;n>=1;n--){
       const t=n/N,tm=t-.5/N,f=N>1&&tm>t0?1-kd*Math.pow((tm-t0)/(1-t0),2):1;
@@ -1217,7 +1219,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=49;
+const VER=50;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
