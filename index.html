@@ -200,7 +200,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v45</div>
+  <div id="ver">v46</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -279,7 +279,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 45 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 46 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -322,7 +322,7 @@ const B_EXC=B_SIG.concat(['تركيز حاد فوري','تكيّف سهل وسر
 const B_DIG=['رؤية واضحة للبعيد والمتوسط والقريب','تصميم رقمي للاستخدام اليومي'];
 const B_PRM=B_DIG.concat(['مجال أوسع للقراءة والشاشة']);
 const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكورية']);
-const DZ=[.16,.09,.045,.015];
+const DZ=[.05,.03,.016,.006];
 const DESIGNS=[
  {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
  {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
@@ -706,7 +706,7 @@ function drawPanel(x0,w,TA,TB,split){
     if(side){ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();side<0?ctx.rect(0,0,cx,cv.height):ctx.rect(cx,0,cv.width-cx,cv.height);ctx.clip()}
     /* radial distortion: rings drawn from the edge inwards; stronger for simpler designs */
     /* straight lines stay straight inside the clear zone; past it they bend a little, less with better designs */
-    const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1),N=kd>.002?22:1;
+    const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1),N=kd>.002?48:1;
     const cr=isSV()?T.rc*rxNarrow(T):Math.min(26,halfW(T,0)),t0=clamp(cr/26,.25,.92);
     for(let n=N;n>=1;n--){
       const t=n/N,tm=t-.5/N,f=N>1&&tm>t0?1-kd*Math.pow((tm-t0)/(1-t0),2):1;
@@ -1197,7 +1197,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=45;
+const VER=46;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
