@@ -113,6 +113,7 @@ body.fs.split #inkbar{top:auto;bottom:80px;transform:none}
 #peekTag.on{display:block}
 .peek{touch-action:none;user-select:none;-webkit-user-select:none}
 body.fs.split .peek{display:none}
+#cmp{position:fixed;inset:0;z-index:2000;background:rgba(5,8,20,.75);display:flex;align-items:center;justify-content:center;padding:16px}#cmp[hidden]{display:none}
 #sum{position:fixed;inset:0;z-index:2000;background:rgba(5,8,20,.75);display:flex;align-items:center;justify-content:center;padding:16px}
 #sum[hidden]{display:none}
 .sbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;width:min(460px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
@@ -159,13 +160,14 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v33</div>
+  <div id="ver">v34</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
 <div class="seg">
   <button class="peek" style="flex:1">👆 اضغط مطوّلاً: قبل وبعد</button>
-  <button id="sumB" style="flex:1">🪪 كارت العدسة للعميل</button>
+  <button id="sumB" style="flex:1">🪪 كارت العدسة</button>
+  <button id="cmpB" style="flex:1">⚖️ قارن كارتين</button>
 </div>
 <button class="big" id="inst" hidden style="background:var(--panel2);color:var(--ink);border-color:var(--line)">📲 ثبّت المحاكي كتطبيق (ملء شاشة كامل)</button>
 <div class="grid3" id="scn" aria-label="مشاهد جاهزة">
@@ -219,9 +221,22 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 33 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 34 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
+<div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
+  <div class="sbox">
+    <h2 id="cmT">⚖️ مقارنة العدسات</h2>
+    <div class="seg"><select id="cmA" aria-label="العدسة الأولى" style="flex:1"></select><select id="cmB" aria-label="العدسة التانية" style="flex:1"></select></div>
+    <img id="cmImg" alt="مقارنة العدستين" style="width:100%;border-radius:12px;display:block">
+    <p class="sub" id="cmHint"></p>
+    <div class="seg">
+      <button id="cmImgB" class="wa" style="border:0">🖼️ ابعت كصورة</button>
+      <a id="cmWa" class="wa" target="_blank" rel="noopener">💬 ابعت كنص</a>
+    </div>
+    <div class="seg"><button id="cmCopy" style="flex:1">📋 نسخ النص</button><button id="cmX" style="flex:1">إغلاق</button></div>
+  </div>
+</div>
 <div id="sum" hidden role="dialog" aria-modal="true" aria-labelledby="sumT">
   <div class="sbox">
     <h2 id="sumT">كارت عدستك</h2>
@@ -273,15 +288,15 @@ const EXTRA=[
 const PROT_L=["ضد الخدوش","ضد الضوء الأزرق","حماية UV","ضد الضباب","ضد الغبار","ضد البصمات"];
 const COMF_L=['اتساع المجال','نعومة الانتقال','راحة القراءة','سهولة التعوّد'];
 const PROT=[
- {lv:'أساسية',p:[2,1,3,1,1,1],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي','البعيد والمتوسط والقريب في عدسة واحدة']]},
- {lv:'أساسية',p:[3,1,3,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي محسّن','مجال أوسع للقراءة والشاشة']]},
- {lv:'أساسية',p:[3,2,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['أوسع تصميم كوري','أوسع مجال في الفئة الكورية']]},
- {lv:'متوسطة',p:[3,3,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['صناعة يابانية','رؤية يومية مريحة وثابتة']]},
- {lv:'متوسطة',p:[4,3,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم أسفريك','عدسة أرفع وأوضح على الجناب']]},
- {lv:'متقدمة',p:[4,4,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['أسفريك متقدم','أوسع مجال وأقل تشويش في كلاريفو']]},
- {lv:'متقدمة',p:[4,4,5,4,3,3],w:'ضمان سنتين على عيوب التصنيع',tech:[['FieldMax','ثبات الرؤية مع المشي والسواقة'],['دبل أسفريك','عدسة أرفع وأفلت']]},
- {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['PathVision','ممر أنعم وتمايل أقل'],['DiamondView','6 طبقات حماية كاملة']]},
- {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','محسوبة نقطة بنقطة على مقاسك'],['NeoAdapt','بتتكيف مع عاداتك ووضعيتك'],['UltraSlim','أنحف عدسة']]}
+ {lv:'أساسية',p:[2,1,3,1,1,1],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي','بعيد ومتوسط وقريب في عدسة واحدة']]},
+ {lv:'أساسية',p:[3,1,3,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي محسّن','مجال أوسع للقراءة والشاشة'],['طبقة مضادة للانعكاس','رؤية أوضح وإبهار أقل']]},
+ {lv:'أساسية',p:[3,2,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['أوسع تصميم كوري','أوسع مجال في الفئة الكورية'],['طبقة مضادة للانعكاس','رؤية أوضح وإبهار أقل'],['مقاومة خدش محسّنة','عمر أطول للعدسة']]},
+ {lv:'متوسطة',p:[3,3,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['صناعة يابانية','جودة ثابتة ورؤية مريحة'],['فلتر الضوء الأزرق','راحة أكتر قدام الشاشات'],['طبقة مضادة للانعكاس','رؤية أوضح وإبهار أقل']]},
+ {lv:'متوسطة',p:[4,3,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم أسفريك','عدسة أرفع وأوضح على الجناب'],['فلتر الضوء الأزرق','راحة أكتر قدام الشاشات'],['طبقة سهلة التنظيف','بتقاوم البقع والبصمات']]},
+ {lv:'متقدمة',p:[4,4,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['أسفريك متقدم','أوسع مجال وأقل تشويش في كلاريفو'],['فلتر الضوء الأزرق','راحة أكتر قدام الشاشات'],['طبقة سهلة التنظيف','بتقاوم البقع والبصمات']]},
+ {lv:'متقدمة',p:[4,4,5,4,4,4],w:'ضمان سنتين على عيوب التصنيع',tech:[['FieldMax','ثبات الرؤية مع المشي والسواقة'],['دبل أسفريك','عدسة أرفع وأفلت'],['NanoClear Plus','مقاومة للضباب والخدش'],['ClearBlue','فلتر ذكي للضوء الأزرق']]},
+ {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['PathVision','ممر أنعم وتمايل أقل'],['دبل أسفريك','عدسة أرفع وأفلت'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']]},
+ {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','محسوبة نقطة بنقطة على مقاسك'],['NeoAdapt','بتتكيف مع عاداتك ووضعيتك'],['UltraSlim','أنحف عدسة'],['DiamondView','6 طبقات حماية كاملة'],['ClearBlue','فلتر ذكي للضوء الأزرق']]}
 ];
 const LENSES=[
  {b:0,ar:'بروتكتد',en:'Protected',d:0,pr:599,cf:.80,nf:.66,df:.66,gk:.25,field:22,adapt:35,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
@@ -847,6 +862,85 @@ $('sumImgB').addEventListener('click',async()=>{
   }catch(e){if(e&&e.name==='AbortError')return}
   $('sumHint').textContent='اضغط مطوّلاً على الصورة واختار "مشاركة" أو "حفظ"، وبعدين ابعتها واتساب.';
 });
+/* ---------- compare two lens cards (balance scale) ---------- */
+const CATS=[
+ ['😌','الراحة',T=>(T.r[1]+T.r[2]+T.r[3]+T.r[4])/4],
+ ['👁️','الوضوح ومجال الرؤية',T=>(T.r[0]+T.r[1])/2],
+ ['⚡','سرعة التعوّد',T=>T.r[4]],
+ ['🛡️','الحماية',T=>T.p.reduce((a,b)=>a+b,0)/6],
+ ['🧼','العملية اليومية',T=>(T.p[3]+T.p[4]+T.p[5])/3],
+ ['⏳','العمر والمتانة',T=>Math.min(5,(T.p[0]+(T.w.includes('سنتين')?5:3))/2)]
+];
+function cmpScores(A,B){return CATS.map(([ic,l,f])=>{const a=f(A),b=f(B);return {ic,l,a,b,w:Math.abs(a-b)<.25?0:(a>b?1:-1)}})}
+function cmpText(A,B){
+  const sc=cmpScores(A,B),ta=sc.reduce((s,o)=>s+o.a,0),tb=sc.reduce((s,o)=>s+o.b,0),r=v=>Math.round(v);
+  const L=['⚖️ *مقارنة العدسات*','🅰️ *'+full(A)+'* · '+desOf(A).ar+' · '+A.w,'🅱️ *'+full(B)+'* · '+desOf(B).ar+' · '+B.w,''];
+  sc.forEach(o=>L.push(o.ic+' *'+o.l+'*','   🅰️ '+stTxt(r(o.a))+(o.w>0?'  ✅':''),'   🅱️ '+stTxt(r(o.b))+(o.w<0?'  ✅':'')));
+  L.push('','⚖️ الكفة بتميل لـ: *'+(Math.abs(ta-tb)<.3?'الاتنين متساويين':full(ta>tb?A:B))+'*');
+  [[A,'🅰️'],[B,'🅱️']].forEach(([T,k])=>{L.push('',k+' التقنيات: '+T.tech.map(t=>t[0]).join('، '));if(T.lux)L.push(k+' '+T.lux.t)});
+  return L.join('\n');
+}
+function cmpPNG(A,B){
+  const W=1080,P=50,F='"IBM Plex Sans Arabic",Tahoma,sans-serif',FD='"El Messiri","IBM Plex Sans Arabic",Tahoma,sans-serif';
+  const sc=cmpScores(A,B),ta=sc.reduce((s,o)=>s+o.a,0),tb=sc.reduce((s,o)=>s+o.b,0);
+  const nt=Math.max(A.tech.length,B.tech.length);
+  const H=120+230+440+sc.length*96+70+nt*54+((A.lux||B.lux)?80:0)+100;
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#16204a');g.addColorStop(1,'#0d1430');x.fillStyle=g;x.fillRect(0,0,W,H);x.fillStyle='#f0c36a';x.fillRect(0,0,W,10);
+  x.direction='rtl';x.textBaseline='middle';
+  const R=(X,Y,w,h,r,col)=>{x.fillStyle=col;x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();x.fill()};
+  const T_=(s,X,Y,sz,col,wt,f,al)=>{x.font=(wt||500)+' '+sz+'px '+(f||F);x.fillStyle=col;x.textAlign=al||'center';x.fillText(s,X,Y)};
+  const stars=(n,cx,Y,sz)=>{n=Math.round(n);x.direction='ltr';x.font='700 '+sz+'px '+F;const s1='★'.repeat(n),s2='★'.repeat(5-n),w1=x.measureText(s1).width,w2=x.measureText(s2).width,X=cx-(w1+w2)/2;x.textAlign='left';x.fillStyle='#ffc93c';x.fillText(s1,X,Y);x.fillStyle='rgba(255,255,255,.2)';x.fillText(s2,X+w1,Y);x.direction='rtl'};
+  const cA=W*0.75,cB=W*0.25,colA='#7fd8ff',colB='#ff9f5a';
+  T_('⚖️ مقارنة العدسات',W/2,70,46,'#f0c36a',700,FD);
+  let y=140;
+  [[A,cA,colA,'🅰️'],[B,cB,colB,'🅱️']].forEach(([T,cx,col,k])=>{R(cx-245,y,490,200,22,'#1e2a58');x.strokeStyle=col;x.lineWidth=3;x.stroke();
+    T_(k+' '+BRANDS[T.b].ar,cx,y+42,30,'#a4b0d6',600);T_(T.ar,cx,y+92,46,col,700,FD);T_(desOf(T).ic+' '+desOf(T).ar+' · '+BRANDS[T.b].from,cx,y+140,26,'#dce4fb',500);T_('🛡️ '+T.w.replace('على عيوب التصنيع','· عيوب التصنيع'),cx,y+178,22,'#a4b0d6',500)});
+  y+=240;
+  /* balance scale: the better lens is heavier and sinks */
+  const px=W/2,py=y+110,len=340,diff=ta-tb,ang=Math.max(-.3,Math.min(.3,diff*.09));
+  x.fillStyle='#c9a24f';x.beginPath();x.moveTo(px-70,y+330);x.lineTo(px+70,y+330);x.lineTo(px+14,py);x.lineTo(px-14,py);x.closePath();x.fill();
+  R(px-120,y+322,240,18,9,'#c9a24f');
+  const ex=Math.cos(ang)*len,ey=Math.sin(ang)*len,endR=[px+ex,py+ey],endL=[px-ex,py-ey];
+  x.strokeStyle='#f0c36a';x.lineWidth=14;x.lineCap='round';x.beginPath();x.moveTo(endL[0],endL[1]);x.lineTo(endR[0],endR[1]);x.stroke();
+  x.fillStyle='#f0c36a';x.beginPath();x.arc(px,py,20,0,7);x.fill();
+  [[endR,A,colA],[endL,B,colB]].forEach(([e,T,col])=>{x.strokeStyle='rgba(240,195,106,.8)';x.lineWidth=3;x.beginPath();x.moveTo(e[0],e[1]);x.lineTo(e[0]-90,e[1]+120);x.moveTo(e[0],e[1]);x.lineTo(e[0]+90,e[1]+120);x.stroke();
+    x.fillStyle=col;x.beginPath();x.moveTo(e[0]-120,e[1]+120);x.lineTo(e[0]+120,e[1]+120);x.quadraticCurveTo(e[0],e[1]+185,e[0]-120,e[1]+120);x.fill();
+    T_(T.ar,e[0],e[1]+140,28,'#0d1430',700)});
+  const win=Math.abs(diff)<.3?'الاتنين متساويين':'الكفة بتميل لـ '+full(diff>0?A:B);
+  R(W/2-330,y+362,660,64,32,'rgba(240,195,106,.16)');T_('⚖️ '+win,W/2,y+394,34,'#f0c36a',700,FD);
+  y+=450;
+  sc.forEach(o=>{R(P,y,W-2*P,82,18,'#1e2a58');T_(o.ic+' '+o.l,W/2,y+41,28,'#f1f4fc',700);
+    [[o.a,cA,o.w>0,colA],[o.b,cB,o.w<0,colB]].forEach(([v,cx,wn,col])=>{stars(v,cx+(cx>W/2?30:-30),y+41,32);if(wn){T_('✅',cx+(cx>W/2?175:-175),y+41,30,'#fff',700)}});
+    y+=96});
+  y+=10;T_('⚙️ التقنيات',W/2,y+10,32,'#f0c36a',700,FD);y+=60;
+  for(let k=0;k<nt;k++){[[A,cA,colA],[B,cB,colB]].forEach(([T,cx,col])=>{const t=T.tech[k];if(t)T_('✓ '+t[0]+': '+t[1],cx,y,23,'#f1f4fc',500)});y+=54}
+  if(A.lux||B.lux){[[A,cA],[B,cB]].forEach(([T,cx])=>{if(T.lux){R(cx-240,y,480,60,16,'rgba(240,195,106,.18)');T_(T.lux.t,cx,y+30,28,'#f0c36a',700,FD)}});y+=80}
+  x.fillStyle='rgba(255,255,255,.08)';x.fillRect(0,H-70,W,70);T_('IHAB Progressive Simulator',W/2,H-35,24,'#a4b0d6',500);
+  return c;
+}
+let cmpBlob=null;
+function lensOptsPlain(){return BRANDS.map((b,k)=>'<optgroup label="'+b.ar+'">'+LENSES.map((t,i)=>t.b===k?'<option value="'+i+'">'+full(t)+'</option>':'').join('')+'</optgroup>').join('')}
+$('cmA').innerHTML=lensOptsPlain();$('cmB').innerHTML=lensOptsPlain();
+function cmpRender(){
+  const A=LENSES[+$('cmA').value],B=LENSES[+$('cmB').value],c=cmpPNG(A,B);
+  $('cmImg').src=c.toDataURL('image/png');cmpBlob=null;c.toBlob(b=>{cmpBlob=b},'image/png');
+  $('cmWa').href='https://wa.me/?text='+encodeURIComponent(cmpText(A,B));$('cmHint').textContent='';
+}
+$('cmpB').addEventListener('click',()=>{
+  const a=S.i,b=S.cmp>=0?S.cmp:(a<LENSES.length-1?LENSES.length-1:0);
+  $('cmA').value=a;$('cmB').value=b===a?(a?0:1):b;cmpRender();$('cmp').hidden=false;
+});
+['cmA','cmB'].forEach(k=>$(k).addEventListener('change',cmpRender));
+$('cmImgB').addEventListener('click',async()=>{
+  try{const f=new File([cmpBlob],'lens-compare.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'مقارنة العدسات'});return}}catch(e){if(e&&e.name==='AbortError')return}
+  $('cmHint').textContent='اضغط مطوّلاً على الصورة واختار "مشاركة" أو "حفظ"، وبعدين ابعتها واتساب.';
+});
+$('cmX').addEventListener('click',()=>{$('cmp').hidden=true});
+$('cmp').addEventListener('click',e=>{if(e.target.id==='cmp')$('cmp').hidden=true});
+$('cmCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cmpText(LENSES[+$('cmA').value],LENSES[+$('cmB').value]));$('cmCopy').textContent='✅ اتنسخ'}catch(_){$('cmCopy').textContent='انسخ يدوي'}setTimeout(()=>{$('cmCopy').textContent='📋 نسخ النص'},1500)});
+
 $('sumX').addEventListener('click',()=>{$('sum').hidden=true});
 $('sum').addEventListener('click',e=>{if(e.target.id==='sum')$('sum').hidden=true});
 $('sumCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cardText(LENSES[S.i]));$('sumCopy').textContent='✅ اتنسخ'}catch(_){$('sumCopy').textContent='انسخ يدوي'}setTimeout(()=>{$('sumCopy').textContent='📋 نسخ النص'},1500)});
@@ -859,7 +953,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=33;
+const VER=34;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
