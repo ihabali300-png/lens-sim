@@ -95,7 +95,8 @@ body.fs #tPanel.pop #tClose{display:block}
 body:not(.fs) #fsTint{display:none}
 #tStat{display:none;position:absolute;top:8px;right:8px;z-index:3;background:rgba(13,20,48,.82);border-radius:12px;padding:5px 10px;font-size:12.5px;pointer-events:none;max-width:70%}
 #tStat.on{display:block}#tStat .tf{display:block;font-size:11px;opacity:.8}#tStat i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-inline-end:5px;vertical-align:-1px;border:1px solid #fff}
-#tStat .tb{display:block;height:8px;background:#e6eaf3;border-radius:4px;margin-top:5px;overflow:hidden;border:1px solid rgba(255,255,255,.6)}#tStat .tb span{display:block;height:100%;background:#111;transition:width .25s linear}
+#tStat .tbw{display:flex;align-items:center;gap:5px;margin-top:5px}#tStat .tbw em{font-style:normal;font-size:13px;line-height:1}
+#tStat .tb{flex:1;margin-top:0!important;display:block;height:8px;background:#e6eaf3;border-radius:4px;margin-top:5px;overflow:hidden;border:1px solid rgba(255,255,255,.6)}#tStat .tb span{display:block;height:100%;background:#111;transition:width .25s linear}
 body.fs #ver{display:none}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chips span{background:var(--panel2);border-radius:20px;padding:3px 10px;font-size:12.5px}
@@ -179,7 +180,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v39</div>
+  <div id="ver">v40</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -252,7 +253,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 39 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 40 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1050,7 +1051,7 @@ function tintUi(tg){
   const el=$('tStat');if(S.tint==='none'){el.classList.remove('on');return}
   const T=TINTS[S.tint],c=tintCol(),pct=Math.round(S.dk*100),up=tg>S.dk+.01,down=tg<S.dk-.01;
   const eta=up?' · بيغمق…':down?' · بيصفى…':'';
-  el.innerHTML='<i style="background:'+c[1]+'"></i>'+T.name+' · '+c[0]+' · <b>'+pct+'%</b> '+(exposure()>.5?'☀️':'🏠')+eta+'<small class="tf">'+T.fact+'</small><span class="tb"><span style="width:'+Math.round(Math.min(1,S.dk/T.max)*100)+'%"></span></span>';
+  el.innerHTML='<i style="background:'+c[1]+'"></i>'+T.name+' · '+c[0]+' · <b>'+pct+'%</b> '+(exposure()>.5?'☀️':'🏠')+eta+'<small class="tf">'+T.fact+'</small><span class="tbw"><em>☀️</em><span class="tb"><span style="width:'+Math.round(Math.min(1,S.dk/T.max)*100)+'%"></span></span><em>🏠</em></span>';
   el.classList.add('on');
 }
 function tintPanel(){
@@ -1082,7 +1083,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=39;
+const VER=40;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
