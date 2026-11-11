@@ -81,7 +81,26 @@ details output{color:var(--accent);font-weight:700}
 .des{background:var(--panel2);border-radius:10px;padding:8px 10px;margin:10px 0 0;font-size:14px}.des b{color:var(--accent)}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
-.seg{display:flex;gap:6px}.seg button{flex:1}
+.seg{display:flex;gap:6px}
+#ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#inkbar{position:absolute;left:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:3}
+#inkbar button{width:40px;height:40px;padding:0;border-radius:50%;background:rgba(13,20,48,.8);border-color:rgba(255,255,255,.3);font-size:17px}
+#inkbar .col{display:none;background:var(--c)}
+#inkbar.on .col{display:block}
+#inkbar .col[aria-pressed="true"]{outline:3px solid #fff;outline-offset:1px}
+#inkbar #undoB,#inkbar #clrB{display:none}#inkbar.has #undoB,#inkbar.has #clrB{display:block}
+#penB[aria-pressed="true"]{background:var(--accent)!important}
+body.fs.split #inkbar{top:auto;bottom:80px;transform:none}
+#peekTag{display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#ff8a3d;color:#1b0c00;font-weight:700;border-radius:10px;padding:5px 14px;pointer-events:none;z-index:3;white-space:nowrap}
+#peekTag.on{display:block}
+.peek{touch-action:none;user-select:none;-webkit-user-select:none}
+body.fs.split .peek{display:none}
+#sum{position:fixed;inset:0;z-index:2000;background:rgba(5,8,20,.75);display:flex;align-items:center;justify-content:center;padding:16px}
+#sum[hidden]{display:none}
+.sbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;width:min(460px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
+#sumBody .row2{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
+#sumBody .row2 b{color:var(--accent)}
+.wa{flex:1;display:flex;align-items:center;justify-content:center;background:#1fa855;color:#fff;border-radius:10px;text-decoration:none;font-weight:700}.seg button{flex:1}
 .camb{display:flex;align-items:center;justify-content:center;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 4px;cursor:pointer;font-weight:600}
 .camb:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 #camMsg{background:var(--panel);border-inline-start:4px solid var(--accent);border-radius:8px;padding:8px 10px}
@@ -97,6 +116,16 @@ details output{color:var(--accent);font-weight:700}
 
 <div id="wrap">
   <canvas id="cv" aria-label="منظر من خلال العدسة، اسحب لتحريك العدسة"></canvas>
+  <canvas id="ink" aria-hidden="true"></canvas>
+  <div id="inkbar">
+    <button id="penB" aria-pressed="false" aria-label="القلم">✏️</button>
+    <button class="col" data-c="#ff3b4e" aria-pressed="true" aria-label="أحمر" style="--c:#ff3b4e"></button>
+    <button class="col" data-c="#ffd23f" aria-pressed="false" aria-label="أصفر" style="--c:#ffd23f"></button>
+    <button class="col" data-c="#ffffff" aria-pressed="false" aria-label="أبيض" style="--c:#ffffff"></button>
+    <button id="undoB" aria-label="تراجع">↩️</button>
+    <button id="clrB" aria-label="امسح الرسم">🧽</button>
+  </div>
+  <div id="peekTag"></div>
   <div id="fsSel">
     <div class="grp" id="grpA"><select id="selA" aria-label="العدسة الشمال"></select></div>
     <div class="grp" id="grpB"><select id="selB" aria-label="العدسة اليمين"></select></div>
@@ -107,13 +136,18 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsDown" aria-label="الفئة السابقة">▶</button>
     <div id="fsName"></div>
     <button id="fsZ">مناطق الرؤية</button>
+    <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v27</div>
+  <div id="ver">v28</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
+<div class="seg">
+  <button class="peek" style="flex:1">👆 اضغط مطوّلاً: قبل وبعد</button>
+  <button id="sumB" style="flex:1">📋 ملخص للعميل</button>
+</div>
 <button class="big" id="inst" hidden style="background:var(--panel2);color:var(--ink);border-color:var(--line)">📲 ثبّت المحاكي كتطبيق (ملء شاشة كامل)</button>
 <div class="grid3" style="grid-template-columns:repeat(3,1fr)">
   <label class="camb" for="photo">📷 صوّر المكان<input type="file" id="photo" accept="image/*" capture="environment" hidden></label>
@@ -161,9 +195,21 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 27 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 28 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
+<div id="sum" hidden role="dialog" aria-modal="true" aria-labelledby="sumT">
+  <div class="sbox">
+    <h2 id="sumT">ملخص عدستك</h2>
+    <div id="sumBody"></div>
+    <p class="sub">صوّر الشاشة دي أو ابعتها واتساب.</p>
+    <div class="seg">
+      <button id="sumCopy">📋 نسخ</button>
+      <a id="sumWa" class="wa" target="_blank" rel="noopener">💬 واتساب</a>
+      <button id="sumX">إغلاق</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const BRANDS=[{ar:'أو سي',en:'OC',from:'كوري'},{ar:'كلاريفو',en:'Clarivo',from:'ياباني'},{ar:'بريلمان',en:'Brillmann',from:'ألماني'}];
@@ -194,7 +240,7 @@ const LENSES=[
  {b:2,ar:'سيجنتشر',en:'Signature',d:2,pr:2600,cf:1.5,nf:1.18,df:1.24,gk:.15,field:82,adapt:86,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
-const S={zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
+const S={pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 let K=1.6,SW=160,GX=96;const L=14,M=2.2,NP=3.2,GY=54;
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -457,7 +503,7 @@ const isSplit=()=>document.body.classList.contains('fs')&&S.cmpOn&&S.cmp>=0;
 function draw(){
   if(!cw) return;
   PANELS=[];
-  const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
+  const TA=S.peek?LENSES[peekIdx()]:LENSES[S.i],TB=S.peek?TA:(S.cmp>=0?LENSES[S.cmp]:TA);
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
   K=isSplit()?1.5:document.body.classList.contains('fs')?1.7:1.6; /* bigger lens drawing in full screen */
   /* same physical lens size whichever way the phone is held: landscape loses height to the status bar */
@@ -487,7 +533,7 @@ function layout(){
   let tgt=160;
   if(fs){const sp=S.cmpOn&&S.cmp>=0,av=ch-(sp?54:4)-60,w=sp?cw/2:cw;tgt=clamp(Math.round((FV1-FV0)*w/av),160,420)}
   if(tgt!==SW)setSW(tgt);
-  draw();
+  draw();if(typeof drawInk==='function')drawInk();
 }
 
 /* ---------- UI ---------- */
@@ -585,15 +631,51 @@ document.addEventListener('fullscreenchange',()=>{
 });
 let drag=null;
 let moved=0;
-cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];moved=0;$('hint').style.display='none';try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener('pointerdown',e=>{if(S.pen||e.pointerType==='pen'){inkStart(e);return}drag=[e.clientX,e.clientY];moved=0;$('hint').style.display='none';try{cv.setPointerCapture(e.pointerId)}catch(_){}});
 cv.addEventListener('pointermove',e=>{
+  if(inkCur){inkMove(e);return}
   if(!drag)return;
   let dx=e.clientX-drag[0],dy=e.clientY-drag[1];moved+=Math.abs(dx)+Math.abs(dy);drag=[e.clientX,e.clientY];
   if(rot){const t=dx;dx=dy;dy=-t}
   S.gx=clamp(S.gx+dx/sc,25,SW-25);S.gy=clamp(S.gy+dy/sc,20,72);draw();
 });
-cv.addEventListener('pointerup',e=>{if(drag&&moved<6){const z=zoneAt(e);if(z)toggleZ(z)}drag=null});
-cv.addEventListener('pointercancel',()=>{drag=null});
+cv.addEventListener('pointerup',e=>{if(inkCur){inkCur=null;return}if(drag&&moved<6){const z=zoneAt(e);if(z)toggleZ(z)}drag=null});
+cv.addEventListener('pointercancel',()=>{drag=null;inkCur=null});
+/* ---------- pen / S Pen drawing ---------- */
+const ink=$('ink'),ictx=ink.getContext('2d');let strokes=[],inkCur=null,inkCol='#ff3b4e';
+function wrapXY(e){const r=cv.getBoundingClientRect();return rot?[(e.clientY-r.top)/cw,(r.right-e.clientX)/ch]:[(e.clientX-r.left)/cw,(e.clientY-r.top)/ch]}
+function inkStart(e){$('hint').style.display='none';try{cv.setPointerCapture(e.pointerId)}catch(_){}inkCur={c:inkCol,p:[wrapXY(e)]};strokes.push(inkCur);$('inkbar').classList.add('has');drawInk()}
+function inkMove(e){const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];evs.forEach(v=>inkCur.p.push(wrapXY(v)));drawInk()}
+function drawInk(){
+  if(ink.width!==cv.width||ink.height!==cv.height){ink.width=cv.width;ink.height=cv.height}
+  ictx.setTransform(dpr,0,0,dpr,0,0);ictx.clearRect(0,0,cw,ch);ictx.lineCap=ictx.lineJoin='round';
+  strokes.forEach(st=>{ictx.strokeStyle='rgba(0,0,0,.45)';ictx.lineWidth=6;line(st);ictx.strokeStyle=st.c;ictx.lineWidth=3.5;line(st)});
+  function line(st){ictx.beginPath();st.p.forEach((q,i)=>i?ictx.lineTo(q[0]*cw,q[1]*ch):ictx.moveTo(q[0]*cw,q[1]*ch));if(st.p.length===1)ictx.lineTo(st.p[0][0]*cw+.1,st.p[0][1]*ch);ictx.stroke()}
+}
+$('penB').addEventListener('click',()=>{S.pen=!S.pen;$('penB').setAttribute('aria-pressed',S.pen);$('inkbar').classList.toggle('on',S.pen)});
+document.querySelectorAll('#inkbar .col').forEach(b=>b.addEventListener('click',()=>{inkCol=b.dataset.c;document.querySelectorAll('#inkbar .col').forEach(x=>x.setAttribute('aria-pressed',x===b))}));
+$('undoB').addEventListener('click',()=>{strokes.pop();if(!strokes.length)$('inkbar').classList.remove('has');drawInk()});
+$('clrB').addEventListener('click',()=>{strokes=[];$('inkbar').classList.remove('has');drawInk()});
+/* ---------- hold for before / after ---------- */
+function peekIdx(){const b=LENSES[S.i].b,first=LENSES.findIndex(t=>t.b===b);return S.i!==first?first:(S.i!==0?0:0)}
+function peekOn(e){e.preventDefault();if(peekIdx()===S.i)return;S.peek=true;$('peekTag').textContent='قبل: '+full(LENSES[peekIdx()])+' · سيب للرجوع';$('peekTag').classList.add('on');draw()}
+function peekOff(){if(!S.peek)return;S.peek=false;$('peekTag').classList.remove('on');draw()}
+document.querySelectorAll('.peek').forEach(b=>{b.addEventListener('pointerdown',peekOn);['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,peekOff));b.addEventListener('contextmenu',e=>e.preventDefault())});
+/* ---------- customer summary ---------- */
+function sumText(){
+  const T=LENSES[S.i],D=desOf(T),sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);
+  const rx=(S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':'—';
+  return {T,D,rx,lines:['👓 ملخص عدستك','العدسة: '+full(T)+' ('+BRANDS[T.b].from+')','التصميم: '+D.ar,'السعر: '+T.pr+' ريال','المقاس: '+rx+' · إضافة +'+S.add.toFixed(2),'المميزات:'].concat(T.ben.map(b=>'✓ '+b))};
+}
+$('sumB').addEventListener('click',()=>{
+  const o=sumText(),esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  $('sumBody').innerHTML='<div class="row2"><span>العدسة</span><b>'+esc(full(o.T))+'</b></div><div class="row2"><span>الصناعة</span><b>'+BRANDS[o.T.b].from+'</b></div><div class="row2"><span>التصميم</span><b>'+o.D.ic+' '+o.D.ar+'</b></div><div class="row2"><span>السعر</span><b>'+o.T.pr+' ريال</b></div><div class="row2"><span>المقاس</span><b dir="ltr">'+o.rx+' · Add +'+S.add.toFixed(2)+'</b></div><ul class="ben">'+o.T.ben.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul>';
+  $('sumWa').href='https://wa.me/?text='+encodeURIComponent(o.lines.join('\n'));
+  $('sum').hidden=false;
+});
+$('sumX').addEventListener('click',()=>{$('sum').hidden=true});
+$('sum').addEventListener('click',e=>{if(e.target.id==='sum')$('sum').hidden=true});
+$('sumCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(sumText().lines.join('\n'));$('sumCopy').textContent='✅ اتنسخ'}catch(_){$('sumCopy').textContent='انسخ يدوي'}setTimeout(()=>{$('sumCopy').textContent='📋 نسخ'},1500)});
 window.addEventListener('keydown',e=>{
   const m={ArrowLeft:[-3,0],ArrowRight:[3,0],ArrowUp:[0,-3],ArrowDown:[0,3]}[e.key];
   if(m&&(document.body.classList.contains('fs')||document.activeElement===document.body)){e.preventDefault();S.gx=clamp(S.gx+m[0],25,SW-25);S.gy=clamp(S.gy+m[1],20,72);draw()}
@@ -602,7 +684,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=27;
+const VER=28;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
