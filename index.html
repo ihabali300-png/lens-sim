@@ -178,7 +178,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v37</div>
+  <div id="ver">v38</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -209,7 +209,7 @@ body.fs.split .peek{display:none}
   </div>
   <div id="tDots"></div>
   <div class="seg" style="margin-top:8px"><button class="sunB" style="flex:1"></button><button class="spdB" style="flex:1"></button></div>
-  <p class="sub" style="font-size:12.5px;margin-top:6px">🌤️ تلقائي: بيغمق لما العدسة تطلع للشمس (المشهد "جوه وبرّه" أو الكاميرا في مكان منوّر). ⏩ بيسرّع الوقت للعرض، و×1 هو الوقت الحقيقي.</p>
+  <p class="sub" style="font-size:12.5px;margin-top:6px">🌤️ تلقائي: في المشهد "جوه وبرّه" أو مع الكاميرا والصور، فيه خط أصفر في النص: حرّك العدسة يمين ناحية ☀️ برّه تغمق، وشمال ناحية 🏠 جوه تصفى. ⏩ بيسرّع الوقت للعرض، و×1 هو الوقت الحقيقي.</p>
 </section>
 <section class="card" aria-label="اختيار العدسة">
   <div class="grid3" id="brands"></div>
@@ -251,7 +251,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 37 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 38 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -710,6 +710,16 @@ function draw(){
     const h=cw/2;drawPanel(0,h,TA,TA,true);drawPanel(h,h,TB,TB,true);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);
   } else drawPanel(0,cw,TA,TB);
+  if(S.tint!=='none'&&(SRC==='live'||SRC==='photo'))PANELS.forEach(P=>{
+    const lx=P.ox+SW/2*P.sc;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.beginPath();ctx.rect(P.x0,0,P.w,ch);ctx.clip();
+    ctx.fillStyle='rgba(255,214,110,.10)';ctx.fillRect(lx,0,P.x0+P.w-lx,ch);
+    ctx.fillStyle='rgba(20,30,70,.16)';ctx.fillRect(P.x0,0,lx-P.x0,ch);
+    ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,ch);ctx.stroke();
+    ctx.strokeStyle='#ffd23f';ctx.lineWidth=3;ctx.stroke();
+    const tag=(t,x,bg,fg)=>{ctx.font='700 15px "IBM Plex Sans Arabic",Tahoma,sans-serif';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';const w=ctx.measureText(t).width+22;ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,ch*.42-15,w,30,15):ctx.rect(x-w/2,ch*.42-15,w,30);ctx.fill();ctx.fillStyle=fg;ctx.fillText(t,x,ch*.42+1)};
+    tag('☀️ برّه',lx+52,'#ffd23f','#3a2a00');tag('🏠 جوه',lx-52,'rgba(13,20,48,.9)','#fff');
+    ctx.restore();
+  });
 }
 function setSW(w){
   const oldC=SW/2;SW=w;GX=Math.round(96*SW/160);
@@ -1007,7 +1017,7 @@ S.tint='none';S.tcol=0;S.dk=0;S.ever=false;S.sun='auto';S.spd=5;let liveB=0,tLas
 function exposure(){
   if(S.tint==='none')return 0;
   if(S.sun==='sun')return 1;if(S.sun==='shade')return 0;
-  if(SRC==='live'||SRC==='photo')return liveB>.62?1:0;
+  if(SRC==='live'||SRC==='photo'){const hw=26*K;return clamp((S.gx+hw-SW/2)/(2*hw),0,1)}
   if(SRC==='scene'){if(S.scene==='door'){const hw=26*K;return clamp((S.gx+hw-SW/2)/(2*hw),0,1)}if(S.scene==='car')return .12}
   return 0;
 }
@@ -1071,7 +1081,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=37;
+const VER=38;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
