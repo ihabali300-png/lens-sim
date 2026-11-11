@@ -241,7 +241,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v68</div>
+  <div id="ver">v69</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -320,7 +320,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 68 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 69 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -615,7 +615,7 @@ function computeMasks(TA,TB){
   const d1=i1.data,d2=i2.data;
   /* outside the lens = the customer's eye without glasses: blur grows with the prescription */
   /* naked eye: myopia blurs far more than near; hyperopia blurs near more (some accommodation assumed) */
-  const sph=S.sph+S.cyl/2;
+  const sph=S.sph+S.cyl*.2;
   const defo=q=>{const D=sph<0?Math.max(0,-sph-2.5*q):Math.max(0,sph+2.5*q-1.5)+sph*.35;return clamp(D*.3,0,1)};
   for(let j=0;j<GY;j++){const v=(j+.5)/GY*90,yc=-(v-S.gy)/K,y=yc-3,ey=Math.pow(Math.abs(yc)/18,NP);
     for(let i=0;i<GX;i++){const u=(i+.5)/GX*SW,x=(u-S.gx)/K,q=Q[j*GX+i],k=(j*GX+i)*4;let be;
@@ -623,7 +623,7 @@ function computeMasks(TA,TB){
         const T=x>0?TB:TA,d=isSV()?Math.hypot(x,(y+3)/.85)-T.rc*rxNarrow(T):Math.abs(x)-halfW(T,y);
         const rxb=(1+desOf(T).k*.06*(Math.abs(S.sph)+Math.abs(S.cyl)))*(1+(S.idx-1.5)*1.3);
         const ba=d>0?clamp(d*(isSV()?1.6:S.add)*T.gk*rxb*desOf(T).bl/1.5,0,1)*.6:0;
-        const bd=(SRC==='scene'||(S.rxOn&&DEP.ok))&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.3)*1.2,0,.8):0;
+        const bd=(SRC==='scene'||(S.rxOn&&DEP.ok))&&!isSV()?clamp((Math.abs(ss(-y/L)-q)-.16)*1.7,0,.9):0;
         /* single vision: edge blur comes from the prescription, so it is light at 0.00 and grows with power */
         const pw=Math.abs(S.sph)+Math.abs(S.cyl),svm=isSV()?(S.rxOn?Math.min(1,pw/4):.3+.7*Math.min(1,pw/4)):1;
         be=Math.max((SRC==='scene'||isSV()?ba:ba*1.4)*svm,bd);
@@ -666,7 +666,7 @@ function depGot(m){
     DEP.busy=false;const d=new Uint8Array(m.buf);DEP.w=m.w;DEP.h=m.h;DEP.ch=m.ch;DEP.data=d;
     const smp=[];for(let k=0;k<400;k++)smp.push(d[Math.floor(Math.random()*m.w*m.h)*m.ch]);smp.sort((a,b)=>a-b);
     DEP.lo=smp[20];DEP.hi=smp[380];DEP.ok=true;DEP.v=(DEP.v||0)+1;fillQ();if(SRC!=='live')draw();
-    if(SRC==='live'&&depOn())setTimeout(depRun,Math.max(DEP.dev==='webgpu'?120:450,(m.ms||100)*1.2));
+    if(SRC==='live'&&depOn())setTimeout(depRun,Math.max(DEP.dev==='webgpu'?60:200,(m.ms||100)*.6));
   }
 }
 async function depLoad(){
@@ -703,7 +703,7 @@ function loop(now){if(SRC!=='live')return;raf=requestAnimationFrame(loop);now=no
   if(now-lastT<31||vid.readyState<2)return;lastT=now;
   const t0=performance.now();coverInto(vid,vid.videoWidth,vid.videoHeight,rot);draw();const dt=performance.now()-t0;
   pEma=pEma*.85+dt*.15;if(++pN>20){pN=0;
-    if(pEma>26&&PERF>.8){PERF=Math.max(.8,PERF-.2);layout()}
+    if(pEma>30&&PERF>1){PERF=Math.max(1,PERF-.15);layout()}
     else if(pEma<11&&PERF<1.5){PERF=Math.min(1.5,PERF+.1);layout()}}}
 $('live').addEventListener('click',async()=>{
   msg('');
@@ -782,7 +782,7 @@ function drawPanel(x0,w,TA,TB,split){
   PANELS.push({x0,w,ox,oy,sc});
   {const key=[S.gx,S.gy,K,TA.en,TB.en,S.sph,S.cyl,S.axis,S.add,S.idx,S.dOv,S.noLens,S.rxOn,SRC,SW,GX,MODE,DEP.v,S.scene].join();if(key!==MK[TA===TB?0:(x0?2:1)]){MK[TA===TB?0:(x0?2:1)]=key;computeMasks(TA,TB)}else if(PANELS.length>1)computeMasks(TA,TB)}
   if(comp.width!==cv.width||comp.height!==cv.height){comp.width=cv.width;comp.height=cv.height}
-  const q=comp.getContext('2d');q.setTransform(dpr,0,0,dpr,0,0);const HQ=SRC==='live'?'low':'high';q.imageSmoothingEnabled=true;q.imageSmoothingQuality=HQ;
+  const q=comp.getContext('2d');q.setTransform(dpr,0,0,dpr,0,0);const HQ=SRC==='live'?'medium':'high';q.imageSmoothingEnabled=true;q.imageSmoothingQuality=HQ;
   const dw=SW*sc,dh=90*sc;
   if(fs){q.drawImage(b2,x0,0,w,ch);q.fillStyle='rgba(8,12,30,.45)';q.fillRect(x0,0,w,ch)}
   q.drawImage(sharp,ox,oy,dw,dh);
@@ -794,13 +794,22 @@ function drawPanel(x0,w,TA,TB,split){
   });
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();
   ctx.drawImage(comp,0,0);
-  if(S.rxOn&&S.cyl&&cylEff()>.02){ /* astigmatism: blur stretched along one direction at every distance, with a faint double image */
-    const a=S.axis*Math.PI/180,len=cylEff()*2.2*sc*dpr,dx=Math.cos(a),dy=-Math.sin(a),n=Math.min(24,8+Math.round(len/3));
-    const k4=4,sw=Math.ceil(cv.width/k4),sh=Math.ceil(cv.height/k4);if(smc.width!==sw||smc.height!==sh){smc.width=sw;smc.height=sh}
-    const g=smc.getContext('2d');g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.clearRect(0,0,sw,sh);const nn=Math.min(9,n);
-    for(let k=0;k<nn;k++){const t=(k/(nn-1)-.5)*len/k4;g.globalAlpha=1/(k+1);g.drawImage(comp,dx*t,dy*t,sw,sh)}
-    g.globalAlpha=Math.min(.35,cylEff()*.12);g.drawImage(comp,dx*len*.55/k4,dy*len*.55/k4,sw,sh);
-    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();ctx.imageSmoothingEnabled=true;ctx.drawImage(smc,0,0,cv.width,cv.height);ctx.restore();
+  if(S.rxOn&&S.cyl&&cylEff()>.02){
+    /* uncorrected astigmatism, tuned with clinical feedback:
+       0.25-1.00  edges just go soft and run into each other a little (mostly tolerated)
+       1.00-2.50  softer, plus a faint shadow / ghost next to edges (squinting to see clearly)
+       above 2.50 clearly blurred with a visible double image. Axis near 90 bothers more than near 180 */
+    const c=Math.abs(S.cyl),e=cylEff(),a=S.axis*Math.PI/180,dx=Math.cos(a),dy=-Math.sin(a),u=sc*dpr;
+    const len=(c<=1?e*.9:.63+(e-.7)*.55)*u,amix=c<=1?.25+.5*c*c:Math.min(1,.75+.1*(c-1));
+    const k2=2,sw=Math.ceil(cv.width/k2),sh=Math.ceil(cv.height/k2);if(smc.width!==sw||smc.height!==sh){smc.width=sw;smc.height=sh}
+    const g=smc.getContext('2d');g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=true;g.globalAlpha=1;g.clearRect(0,0,sw,sh);
+    const nn=c<=1?4:Math.min(10,5+Math.round(c*1.5));
+    for(let k=0;k<nn;k++){const t=(k/(nn-1)-.5)*len/k2;g.globalAlpha=1/(k+1);g.drawImage(comp,dx*t,dy*t,sw,sh)}
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.rect(x0*dpr,0,w*dpr,ch*dpr);ctx.clip();ctx.imageSmoothingEnabled=true;
+    ctx.globalAlpha=amix*(.7+.3*Math.min(1,e));ctx.drawImage(smc,0,0,cv.width,cv.height);
+    if(c>1){const gh=c<=2.5?.07+.08*(c-1)/1.5:Math.min(.28,.15+.05*(c-2.5)),off=(.7+.45*e)*u; /* faint shadow beside every edge */
+      ctx.globalAlpha=gh*(.6+.4*Math.min(1,e/1.5));ctx.drawImage(comp,dx*off,dy*off)}
+    ctx.restore();
   }
   if(S.noLens){ctx.restore();return}
   /* inside the lens: prescription magnification / minification and cylinder stretch */
@@ -886,7 +895,7 @@ function draw(){
     ctx.restore();
   });
 }
-function SF(){return SRC==='live'?4:SCL}
+function SF(){return SRC==='live'?Math.max(5,Math.min(SCL,Math.round(1400/SW))):SCL}
 function srcRes(){const f=SF();if(sharp.width!==f*SW||sharp.height!==f*90){sharp.width=f*SW;sharp.height=f*90}}
 function setSW(w){
   const oldC=SW/2;SW=w;GX=Math.round(96*SW/160);
@@ -1338,8 +1347,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=68;
-const NOTE='الاستجماتيزم البسيط بقى أخف، ومحور 90 بيشوّش أكتر من 180|كارت التشخيص بيكتب: مع القاعدة / عكس القاعدة / مائل|إشعار التحديث بقى بيكتبلك الجديد';
+const VER=69;
+const NOTE='الاستجماتيزم بقى واقعي: لحد درجة الحواف بتنعم بس، ومن درجة لـ 2.5 بيظهر ظل خفيف|صورة الكاميرا الحية رجعت حادة|تأثير العمق الذكي بقى أوضح وأسرع';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
