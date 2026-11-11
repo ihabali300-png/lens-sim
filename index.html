@@ -88,7 +88,7 @@ details output{color:var(--accent);font-weight:700}
 .mg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .mg>div{display:flex;justify-content:space-between;align-items:center;gap:4px;background:var(--panel2);border-radius:8px;padding:4px 7px;font-size:12px;line-height:1.3}
 .mg .st{font-size:11px;letter-spacing:0}
-.mg>div.hi{background:rgba(255,70,90,.18);border:1px solid #ff4d5e}.mg>div.hi span:first-child{color:#ff8a95;font-weight:700}
+.mg>div.hi{background:rgba(46,204,113,.16);border:1px solid #2ecc71}.mg>div.hi span:first-child{color:#6ee7a0;font-weight:700}
 .tch{display:flex;gap:8px;align-items:baseline;font-size:13px;padding:3px 0;border-bottom:1px dashed var(--line)}.tch:last-child{border:0}
 .tch b{color:var(--clear);white-space:nowrap}
 .lux b{color:var(--accent);margin-inline-end:4px}
@@ -160,7 +160,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v34</div>
+  <div id="ver">v35</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -221,7 +221,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 34 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 35 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -809,7 +809,7 @@ document.querySelectorAll('.peek').forEach(b=>{b.addEventListener('pointerdown',
 /* ---------- lens card (image + text) ---------- */
 const PNOUN=['الخدوش','الضباب','الغبار','البصمات'];
 function protItems(T){
-  const hi=T.lv==='متقدمة جداً',m=n=>hi?{t:'مقاومة عالية لل'+n.slice(2),hi:true}:{t:'مقاومة '+n,hi:false};
+  const hi=T.lv==='متقدمة جداً',m=n=>hi?{t:'✓ مقاومة عالية لل'+n.slice(2),hi:true}:{t:'مقاومة '+n,hi:false};
   return [m(PNOUN[0]),{t:'ضد الضوء الأزرق'},{t:'ضد الأشعة UV'},m(PNOUN[1]),m(PNOUN[2]),m(PNOUN[3])].map((o,k)=>Object.assign(o,{n:T.p[k]}));
 }
 const comfItems=T=>COMF_L.map((l,k)=>({t:l,n:[T.r[1],T.r[2],T.r[3],T.r[4]][k]}));
@@ -817,7 +817,7 @@ const stTxt=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 function rxTxt(){const sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);return (S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':''}
 function cardText(T){
   const D=desOf(T),L=['👓 *كارت عدستك*','*'+full(T)+'*','صناعة '+BRANDS[T.b].from+' · تصميم '+D.ar,'🛡️ '+T.w,'',
-    '*🛡️ طبقات الحماية: '+T.lv+'*'].concat(protItems(T).map(o=>(o.hi?'🔴 ':'▫️ ')+o.t+'  '+stTxt(o.n)),['','*😌 الراحة*'],comfItems(T).map(o=>'▫️ '+o.t+'  '+stTxt(o.n)),['','*⚙️ التقنيات*'],T.tech.map(([n,b])=>'✓ '+n+': '+b));
+    '*🛡️ طبقات الحماية: '+T.lv+'*'].concat(protItems(T).map(o=>(o.hi?'✅ ':'▫️ ')+o.t.replace('✓ ','')+'  '+stTxt(o.n)),['','*😌 الراحة*'],comfItems(T).map(o=>'▫️ '+o.t+'  '+stTxt(o.n)),['','*⚙️ التقنيات*'],T.tech.map(([n,b])=>'✓ '+n+': '+b));
   if(T.lux)L.push('',T.lux.t+': '+T.lux.l.join('، '));
   const rx=rxTxt();if(rx)L.push('','المقاس: '+rx);
   return L.join('\n');
@@ -837,7 +837,7 @@ function cardPNG(T){
   T_('👓 كارت عدستك',W-P,y,40,'#a4b0d6',700,FD);y+=70;
   T_(full(T),W-P,y,58,'#f0c36a',700,FD);y+=66;
   T_('صناعة '+BRANDS[T.b].from+' · '+D.ic+' '+D.ar+' · 🛡️ '+T.w,W-P,y,30,'#dce4fb',500);y+=70;
-  const grid=(items,top)=>{const cw=(W-2*P-16)/2;items.forEach((o,k)=>{const col=k%2,row=Math.floor(k/2),X=W-P-cw-(col*(cw+16)),Y=top+row*88;R(X,Y,cw,74,16,o.hi?'rgba(255,70,90,.22)':'#222d5e');if(o.hi){x.strokeStyle='#ff4d5e';x.lineWidth=3;x.stroke()}T_(o.t,X+cw-22,Y+37,o.t.length>16?26:30,o.hi?'#ff8a95':'#f1f4fc',o.hi?700:600);stars(o.n,X+20,Y+38,30)});return top+Math.ceil(items.length/2)*88};
+  const grid=(items,top)=>{const cw=(W-2*P-16)/2;items.forEach((o,k)=>{const col=k%2,row=Math.floor(k/2),X=W-P-cw-(col*(cw+16)),Y=top+row*88;R(X,Y,cw,74,16,o.hi?'rgba(46,204,113,.18)':'#222d5e');if(o.hi){x.strokeStyle='#2ecc71';x.lineWidth=3;x.stroke()}T_(o.t,X+cw-22,Y+37,o.t.length>16?26:30,o.hi?'#6ee7a0':'#f1f4fc',o.hi?700:600);stars(o.n,X+20,Y+38,30)});return top+Math.ceil(items.length/2)*88};
   T_('🛡️ طبقات الحماية: '+T.lv,W-P,y,36,'#f0c36a',700,FD);y=grid(pi,y+30)+30;
   T_('😌 الراحة',W-P,y,36,'#f0c36a',700,FD);y=grid(ci,y+30)+30;
   T_('⚙️ التقنيات وفايدتها ليك',W-P,y,36,'#f0c36a',700,FD);y+=56;
@@ -953,7 +953,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=34;
+const VER=35;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
