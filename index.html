@@ -224,7 +224,7 @@ function halfW0(T,y,a){
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const sharp=mk(1600,900),bMid=mk(800,450),b1=mk(400,225),b2=mk(160,90),tmp=mk(640,360),m1=mk(GX,GY),m2=mk(GX,GY);
 let Q=new Float32Array(GX*GY);
-const FV0=13,FV1=85; /* visible scene rows in full screen */
+const FV0=10.5,FV1=83.5; /* visible scene rows in full screen */
 const DX=()=>SW/2-80; /* shift that keeps the desk objects centred when the scene is wider */
 function qAt(u,v){
   u-=DX();
