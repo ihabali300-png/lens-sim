@@ -199,7 +199,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v42</div>
+  <div id="ver">v43</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -221,17 +221,7 @@ body.fs.split .peek{display:none}
 </div>
 <p class="sub" id="camMsg" hidden></p>
 
-<section class="card" id="tPanel" aria-label="العدسات المتغيرة">
-  <div class="row" style="justify-content:space-between"><h2 style="font-size:17px">🕶️ العدسة المتغيرة</h2><button id="tClose" aria-label="إغلاق">✕</button></div>
-  <div class="grid3" id="tType" style="margin-top:8px">
-    <button data-t="none" aria-pressed="true">⚪ صافية</button>
-    <button data-t="photo" aria-pressed="false">🌗 فوتوكروميك</button>
-    <button data-t="gen8" aria-pressed="false">✨ ترانزشن Gen 8</button>
-  </div>
-  <div id="tDots"></div>
-  <div class="seg" style="margin-top:8px"><button class="sunB" style="flex:1"></button><button class="spdB" style="flex:1"></button></div>
-  <p class="sub" style="font-size:12.5px;margin-top:6px">🌤️ تلقائي: في المشهد "جوه وبرّه" أو مع الكاميرا والصور، فيه خط أصفر في النص: حرّك العدسة يمين ناحية ☀️ برّه تغمق، وشمال ناحية 🏠 جوه تصفى. ⏩ بيسرّع الوقت للعرض، و×1 هو الوقت الحقيقي.</p>
-</section>
+
 <section class="card" aria-label="اختيار العدسة">
   <div class="grid3" id="brands"></div>
   <div class="grid3" id="tiers" style="margin-top:8px"></div>
@@ -247,6 +237,17 @@ body.fs.split .peek{display:none}
     <button data-z="near" aria-pressed="false">🟠 قريب</button>
   </div>
   <p class="sub" id="cmpHint" style="margin-top:6px"></p>
+</section>
+<section class="card" id="tPanel" aria-label="العدسات المتغيرة">
+  <div class="row" style="justify-content:space-between"><h2 style="font-size:17px">🕶️ العدسة المتغيرة</h2><button id="tClose" aria-label="إغلاق">✕</button></div>
+  <div class="grid3" id="tType" style="margin-top:8px">
+    <button data-t="none" aria-pressed="true">⚪ صافية</button>
+    <button data-t="photo" aria-pressed="false">🌗 فوتوكروميك</button>
+    <button data-t="gen8" aria-pressed="false">✨ ترانزشن Gen 8</button>
+  </div>
+  <div id="tDots"></div>
+  <div class="seg" style="margin-top:8px"><button class="sunB" style="flex:1"></button><button class="spdB" style="flex:1"></button></div>
+  <p class="sub" style="font-size:12.5px;margin-top:6px">🌤️ تلقائي: في المشهد "جوه وبرّه" أو مع الكاميرا والصور، فيه خط أصفر في النص: حرّك العدسة يمين ناحية ☀️ برّه تغمق، وشمال ناحية 🏠 جوه تصفى. ⏩ بيسرّع الوقت للعرض، و×1 هو الوقت الحقيقي.</p>
 </section>
 
 <section class="card">
@@ -272,7 +273,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 42 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 43 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1156,7 +1157,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=42;
+const VER=43;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
