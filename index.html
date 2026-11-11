@@ -223,7 +223,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v59</div>
+  <div id="ver">v60</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -302,7 +302,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 59 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 60 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -709,7 +709,7 @@ function setScene(k){stopLive();SRC='scene';S.scene=k;buildQ();paintScene();msg(
 $('scn').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setScene(b.dataset.s)});
 $('fsScene').addEventListener('click',()=>{const L=['office','car','home','door'];setScene(L[(L.indexOf(S.scene)+1)%4])});
 
-const comp=mk(2,2),smc=mk(2,2);
+const comp=mk(2,2),smc=mk(2,2),hc=mk(2,2);
 function magXY(){
   const k=1.3*(1-(S.idx-1.5)*.5),m=P=>1/(1-.012*k*P);
   return [m(S.sph),m(S.sph+S.cyl)];
@@ -786,10 +786,16 @@ function drawPanel(x0,w,TA,TB,split){
     /* straight lines stay straight inside the clear zone; past it they bend a little, less with better designs */
     const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1)*(S.rxOn?Math.min(1,(Math.abs(S.sph)+Math.abs(S.cyl))/4):1),N=Math.abs(kd)>.002?48:1;
     const cr=isSV()?T.rc*rxNarrow(T):Math.min(26,halfW(T,0)),t0=clamp(cr/26,.25,.92);
-    const NR=Math.abs(kd)>.002?9:0,dr=(t,f)=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);if(t<1){ctx.beginPath();ctx.ellipse(cx,cy,Rx*t,Ry*t,0,0,7);ctx.clip()}
-      ctx.translate(cx,cy);ctx.rotate(ax);ctx.scale(mA*f,mP*f);ctx.rotate(-ax);ctx.translate(-cx,-cy);ctx.drawImage(comp,0,0);ctx.restore()};
-    for(let n=NR;n>=1;n--){const t=t0+(1-t0)*n/NR,tm=t0+(1-t0)*(n-.5)/NR;dr(n===NR?1:t,1-kd*Math.pow((tm-t0)/(1-t0),2))}
-    dr(NR?t0:1,1);
+    /* each ring is clipped to its own band so every pixel is drawn once; the bent edge is drawn from a half-size copy (it is blurred anyway) */
+    const NR=Math.abs(kd)>.002?7:0;
+    if(NR){const hw=Math.ceil(cv.width/2),hh=Math.ceil(cv.height/2);if(hc.width!==hw||hc.height!==hh){hc.width=hw;hc.height=hh}hc.getContext('2d').drawImage(comp,0,0,hw,hh)}
+    const dr=(t,ti,f,src)=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();
+      if(t<1)ctx.ellipse(cx,cy,Rx*t,Ry*t,0,0,7);else ctx.rect(0,0,cv.width,cv.height);
+      if(ti>0){ctx.moveTo(cx+Rx*ti,cy);ctx.ellipse(cx,cy,Rx*ti,Ry*ti,0,0,7,true)}
+      ctx.clip('evenodd');ctx.translate(cx,cy);ctx.rotate(ax);ctx.scale(mA*f,mP*f);ctx.rotate(-ax);ctx.translate(-cx,-cy);
+      ctx.drawImage(src,0,0,cv.width,cv.height);ctx.restore()};
+    for(let n=NR;n>=1;n--){const t=t0+(1-t0)*n/NR,ti=t0+(1-t0)*(n-1)/NR,tm=t0+(1-t0)*(n-.5)/NR;dr(n===NR?1:t,ti*.995,1-kd*Math.pow((tm-t0)/(1-t0),2),hc)}
+    dr(NR?t0:1,0,1,comp);
     /* coating look: off-white cast and anti-reflection colour */
     ctx.setTransform(1,0,0,1,0,0);
     if(T.ow){ctx.globalCompositeOperation='multiply';ctx.globalAlpha=T.ow;ctx.fillStyle='#ffe9b8';ctx.fillRect(cx-Rx,cy-Ry,2*Rx,2*Ry)}
@@ -1298,7 +1304,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=59;
+const VER=60;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
