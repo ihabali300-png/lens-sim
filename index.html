@@ -223,7 +223,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v57</div>
+  <div id="ver">v58</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -302,7 +302,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 57 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 58 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -644,7 +644,7 @@ async function depLoad(){
   if(DEP.st!=='idle')return;DEP.st='loading';depMsg('🤖 بيحمّل نموذج العمق…');
   let T;
   try{T=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2')}catch(e){DEP.st='fail';depMsg('🤖 العمق الذكي مش متاح هنا، شغال التقدير البسيط');setTimeout(()=>depMsg(''),4000);return}
-  DEP.RI=T.RawImage;try{T.env.backends.onnx.wasm.proxy=true;T.env.backends.onnx.wasm.numThreads=2}catch(_){}
+  DEP.RI=T.RawImage;
   const tries=navigator.gpu?[['webgpu','fp16'],['wasm','q8']]:[['wasm','q8']];
   for(const [device,dtype] of tries){
     try{
@@ -655,11 +655,12 @@ async function depLoad(){
     }catch(e){DEP.pipe=null}
   }
   if(!DEP.pipe){DEP.st='fail';depMsg('🤖 العمق الذكي مش شغال على الجهاز ده، شغال التقدير البسيط');setTimeout(()=>depMsg(''),4000);return}
-  depMsg('🤖 العمق الذكي شغال');setTimeout(()=>{if(DEP.st==='ready')depMsg('')},2500);
+  depMsg(DEP.dev==='webgpu'?'🤖 العمق الذكي شغال':'🤖 العمق الذكي شغال على الصور');setTimeout(()=>{if(DEP.st==='ready')depMsg('')},2500);
   depRun();
 }
 async function depRun(){
   if(DEP.st!=='ready'||DEP.busy||!depOn())return;
+  if(DEP.dev!=='webgpu'&&SRC==='live'){DEP.ok=false;fillQ();depMsg('🤖 العمق الذكي على الصور بس في الموبايل ده، واللايف شغال بالتقدير البسيط');setTimeout(()=>depMsg(''),5000);return}
   DEP.busy=true;
   try{
     dcv.width=Math.round(144*SW/90);dcv.height=144;
@@ -1308,7 +1309,7 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=57;
+const VER=58;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1]+location.hash)}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
