@@ -17,12 +17,16 @@ jobs:
       - name: Build
         env: { VCODE: '${{ github.run_number }}' }
         run: gradle -p android assembleRelease --no-daemon
-      - run: cp android/app/build/outputs/apk/release/app-release.apk IHAB-Vision-Lab.apk
+      - run: |
+          cp android/app/build/outputs/apk/pro/release/app-pro-release.apk IHAB-Vision-Lab-Pro-S23.apk
+          cp android/app/build/outputs/apk/friend/release/app-friend-release.apk IHAB-Vision-Lab-S24.apk
       - uses: actions/upload-artifact@v4
-        with: { name: IHAB-Vision-Lab, path: IHAB-Vision-Lab.apk }
+        with: { name: IHAB-Vision-Lab, path: '*.apk' }
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-${{ github.run_number }}
           name: IHAB Vision Lab ${{ github.run_number }}
           make_latest: true
-          files: IHAB-Vision-Lab.apk
+          files: |
+            IHAB-Vision-Lab-Pro-S23.apk
+            IHAB-Vision-Lab-S24.apk

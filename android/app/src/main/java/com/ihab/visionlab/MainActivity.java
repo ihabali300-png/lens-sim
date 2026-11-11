@@ -15,7 +15,7 @@ import java.io.File;
 
 /* Full-screen wrapper around the IHAB Vision Lab web app, with camera and photo picking */
 public class MainActivity extends Activity {
-    static final String URL = "https://ihabali300-png.github.io/lens-sim/";
+    static final String URL = BuildConfig.START_URL;
     WebView web; PermissionRequest pending; ValueCallback<Uri[]> fileCb; Uri shot;
 
     @Override protected void onCreate(Bundle b) {
@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
                 if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                     try {
                         File f = new File(getCacheDir(), "shot_" + System.currentTimeMillis() + ".jpg");
-                        shot = FileProvider.getUriForFile(MainActivity.this, "com.ihab.visionlab.files", f);
+                        shot = FileProvider.getUriForFile(MainActivity.this, BuildConfig.APPLICATION_ID + ".files", f);
                         cam = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); cam.putExtra(MediaStore.EXTRA_OUTPUT, shot);
                         cam.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     } catch (Exception e) { cam = null; }

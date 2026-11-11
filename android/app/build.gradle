@@ -9,6 +9,21 @@ android {
         versionCode Integer.parseInt(System.getenv('VCODE') ?: '1')
         versionName "1." + (System.getenv('VCODE') ?: '1')
     }
+    buildFeatures { buildConfig true }
+    flavorDimensions 'owner'
+    productFlavors {
+        pro {
+            dimension 'owner'
+            resValue 'string', 'app_name', 'IHAB Vision Lab Pro'
+            buildConfigField 'String', 'START_URL', '"https://ihabali300-png.github.io/lens-sim/?ed=pro"'
+        }
+        friend {
+            dimension 'owner'
+            applicationIdSuffix '.friend'
+            resValue 'string', 'app_name', 'IHAB Vision Lab'
+            buildConfigField 'String', 'START_URL', '"https://ihabali300-png.github.io/lens-sim/?ed=friend"'
+        }
+    }
     signingConfigs {
         release {
             storeFile file('ihab-vision-lab.jks')
