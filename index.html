@@ -158,7 +158,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 18 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 19 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -392,11 +392,15 @@ function zlabel(c,icon,str,sub,x,y){
   c.restore();
 }
 function drawPanel(x0,w,TA,TB,split){
-  sc=Math.max(w/160,ch/90);ox=x0+(w-160*sc)/2;oy=(ch-90*sc)*.65;PANELS.push({x0,w,ox,oy,sc});
+  const fs=document.body.classList.contains('fs');
+  sc=Math.max(w/160,ch/90);
+  if(fs)sc=Math.min(sc,ch/90*1.06); /* keep the whole scene height on wide phones */
+  ox=x0+(w-160*sc)/2;oy=fs?(ch-90*sc)/2:(ch-90*sc)*.65;PANELS.push({x0,w,ox,oy,sc});
   computeMasks(TA,TB);
   if(comp.width!==cv.width||comp.height!==cv.height){comp.width=cv.width;comp.height=cv.height}
   const q=comp.getContext('2d');q.setTransform(dpr,0,0,dpr,0,0);q.imageSmoothingEnabled=true;q.imageSmoothingQuality='high';
   const dw=160*sc,dh=90*sc;
+  if(fs){q.drawImage(b2,x0,0,w,ch);q.fillStyle='rgba(8,12,30,.45)';q.fillRect(x0,0,w,ch)}
   q.drawImage(sharp,ox,oy,dw,dh);
   const t=tmp.getContext('2d');t.imageSmoothingEnabled=true;t.imageSmoothingQuality='high';
   [[b1,m1],[b2,m2]].forEach(([b,m])=>{
@@ -446,7 +450,7 @@ function draw(){
   PANELS=[];
   const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
-  K=isSplit()?1.38:1.6;
+  K=isSplit()?1.38:document.body.classList.contains('fs')?1.42:1.6;
   if(isSplit()){
     const h=cw/2;drawPanel(0,h,TA,TA);drawPanel(h,h,TB,TB);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);
