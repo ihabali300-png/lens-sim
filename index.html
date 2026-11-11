@@ -82,11 +82,20 @@ details output{color:var(--accent);font-weight:700}
 .zchk{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:600}.zchk input{width:20px;height:20px;accent-color:var(--accent)}
 .grid3 small.pr{font-size:10.5px;opacity:.75;margin-top:2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips span{background:var(--panel2);border-radius:20px;padding:3px 10px;font-size:12.5px}
+.blk{margin-top:10px}.blk h3{margin:0 0 5px;font-size:14px;font-family:var(--display);color:var(--accent)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mg>div{display:flex;justify-content:space-between;align-items:center;gap:4px;background:var(--panel2);border-radius:8px;padding:4px 7px;font-size:12px;line-height:1.3}
+.mg .st{font-size:11px;letter-spacing:0}
+.tch{display:flex;gap:8px;align-items:baseline;font-size:13px;padding:3px 0;border-bottom:1px dashed var(--line)}.tch:last-child{border:0}
+.tch b{color:var(--clear);white-space:nowrap}
+.lux b{color:var(--accent);margin-inline-end:4px}
 .stars{display:grid;gap:4px;margin-top:10px}
 .srow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;background:var(--panel2);border-radius:10px;padding:6px 10px}
 .st{color:#ffc93c;font-size:17px;letter-spacing:1px;white-space:nowrap;direction:ltr}.st i{font-style:normal;color:rgba(255,255,255,.18)}
 .h3{font-family:var(--display);font-size:16px;margin:12px 0 0;color:var(--ink)}
-.lux{margin-top:12px;border-radius:14px;padding:10px 12px;background:linear-gradient(135deg,rgba(240,195,106,.22),rgba(127,216,255,.12));border:1px solid rgba(240,195,106,.55)}
+.lux{margin-top:10px;font-size:13px;line-height:1.6;border-radius:12px;padding:8px 10px;background:linear-gradient(135deg,rgba(240,195,106,.22),rgba(127,216,255,.12));border:1px solid rgba(240,195,106,.55)}
 .lux h3{margin:0 0 6px;font-family:var(--display);font-size:17px;color:var(--accent)}
 .lux ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}.lux li::before{content:"✦ ";color:var(--accent)}
 #scn button[aria-pressed="true"],#live[aria-pressed="true"]{background:var(--accent);color:#231a04}
@@ -149,7 +158,7 @@ body.fs.split .peek{display:none}
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v29</div>
+  <div id="ver">v30</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -189,10 +198,10 @@ body.fs.split .peek{display:none}
 <section class="card">
   <h2 id="iName"></h2>
   <p class="sub" id="iTag"></p>
-  <p class="des" id="iDes"></p>
-  <div class="stars" id="iStars"></div>
-  <h3 class="h3">أهم ما يميزها</h3>
-  <ul class="ben" id="iBen"></ul>
+  <div class="chips" id="iChips"></div>
+  <div class="blk"><h3 id="iLv"></h3><div class="mg" id="iProt"></div></div>
+  <div class="blk"><h3>😌 الراحة</h3><div class="mg" id="iComf"></div></div>
+  <div class="blk"><h3>⚙️ التقنيات وفايدتها ليك</h3><div id="iTech"></div></div>
   <div class="lux" id="iLux" hidden></div>
 </section>
 
@@ -209,7 +218,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 29 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 30 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="sum" hidden role="dialog" aria-modal="true" aria-labelledby="sumT">
@@ -253,9 +262,22 @@ const EXTRA=[
  {r:[4,4,3,4,3],key:['أعلى فئة يابانية','أوسع مجال وأقل تشويش في كلاريفو','حماية من الضوء الأزرق','ضمان سنة']},
  {r:[5,4,3,4,4],key:['صناعة ألمانية حصرية في eyewa','تقنية FieldMax: ثبات في الرؤية مع المشي والحركة','طبقة NanoClear Plus ضد الضباب والخدش','فلتر ClearBlue للضوء الأزرق','ضمان سنتين']},
  {r:[5,4,5,5,4],key:['صناعة ألمانية حصرية في eyewa','تقنية PathVision: ممر أنعم وتمايل أقل','طبقة DiamondView بست طبقات','فلتر ClearBlue للضوء الأزرق','ضمان سنتين'],
-  lux:{t:'✨ رفاهية الرؤية',l:['انتقال ناعم بين البعيد والقريب من غير ما تحس','إحساس أقل بالدوخة والتمايل','ثبات مريح في القراءة والجوال والشاشة','مقاومة الضباب والبصمات في جو الخليج']}},
+  lux:{t:'✨ رفاهية الرؤية',l:['انتقال ناعم من غير ما تحس','دوخة وتمايل أقل','ثبات في القراءة والجوال']}},
  {r:[5,5,5,5,5],key:['صناعة ألمانية حصرية في eyewa','تصميم FreeForm محسوب نقطة بنقطة','تقنية NeoAdapt: العدسة بتتكيف مع عاداتك ووضعيتك','طبقة DiamondView بست طبقات','عدسة UltraSlim أنحف','ضمان سنتين'],
-  lux:{t:'👑 رفاهية الرؤية القصوى',l:['أوسع مجال رؤية في كل العدسات','أسرع تعوّد، والأنسب لأول مرة بروجرسيف','تركيز حاد فوري على أي مسافة','انتقال ناعم جداً من غير تمايل']}}
+  lux:{t:'👑 رفاهية الرؤية القصوى',l:['أوسع مجال في كل العدسات','أسرع تعوّد','تركيز فوري على أي مسافة']}}
+];
+const PROT_L=["ضد الخدوش","ضد الضوء الأزرق","حماية UV","ضد الضباب","ضد الغبار","ضد البصمات"];
+const COMF_L=['اتساع المجال','نعومة الانتقال','راحة القراءة','سهولة التعوّد'];
+const PROT=[
+ {lv:'أساسية',p:[2,1,3,1,1,1],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي','البعيد والمتوسط والقريب في عدسة واحدة']]},
+ {lv:'أساسية',p:[3,1,3,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم رقمي محسّن','مجال أوسع للقراءة والشاشة']]},
+ {lv:'أساسية',p:[3,2,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['أوسع تصميم كوري','أوسع مجال في الفئة الكورية']]},
+ {lv:'متوسطة',p:[3,3,4,1,2,2],w:'ضمان سنة على عيوب التصنيع',tech:[['صناعة يابانية','رؤية يومية مريحة وثابتة']]},
+ {lv:'متوسطة',p:[4,3,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['تصميم أسفريك','عدسة أرفع وأوضح على الجناب']]},
+ {lv:'متقدمة',p:[4,4,4,2,3,4],w:'ضمان سنة على عيوب التصنيع',tech:[['أسفريك متقدم','أوسع مجال وأقل تشويش في كلاريفو']]},
+ {lv:'متقدمة',p:[4,4,5,4,3,3],w:'ضمان سنتين على عيوب التصنيع',tech:[['FieldMax','ثبات الرؤية مع المشي والسواقة'],['دبل أسفريك','عدسة أرفع وأفلت']]},
+ {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['PathVision','ممر أنعم وتمايل أقل'],['DiamondView','6 طبقات حماية كاملة']]},
+ {lv:'متقدمة جداً',p:[5,5,5,5,5,5],w:'ضمان سنتين على عيوب التصنيع',tech:[['FreeForm','محسوبة نقطة بنقطة على مقاسك'],['NeoAdapt','بتتكيف مع عاداتك ووضعيتك'],['UltraSlim','أنحف عدسة']]}
 ];
 const LENSES=[
  {b:0,ar:'بروتكتد',en:'Protected',d:0,pr:599,cf:.80,nf:.66,df:.66,gk:.25,field:22,adapt:35,tag:'بداية عملية لعدسة متعددة البؤر.',ben:B_DIG},
@@ -268,7 +290,7 @@ const LENSES=[
  {b:2,ar:'سيجنتشر',en:'Signature',d:2,pr:2600,cf:1.5,nf:1.18,df:1.24,gk:.15,field:82,adapt:86,tag:'أداء بصري محسّن مع انتقال سلس بين مناطق الرؤية.',ben:B_SIG},
  {b:2,ar:'إكسلانس',en:'Excellence',d:3,pr:3300,cf:1.75,nf:1.35,df:1.4,gk:.12,field:100,adapt:100,tag:'دقة بصرية متقدمة تتكيف مع نمط حياتك وعاداتك.',ben:B_EXC}
 ];
-LENSES.forEach((t,k)=>Object.assign(t,EXTRA[k]));
+LENSES.forEach((t,k)=>Object.assign(t,EXTRA[k],PROT[k]));
 const S={scene:'office',pen:false,peek:false,zones:{far:false,mid:false,near:false},dOv:-1,i:7,cmp:-1,add:2,sph:0,cyl:0,axis:180,gx:80,gy:47};
 let K=1.6,SW=160,GX=96;const L=14,M=2.2,NP=3.2,GY=54;
 const $=id=>document.getElementById(id);
@@ -644,12 +666,15 @@ function render(){
   $('tiers').innerHTML=LENSES.map((t,i)=>t.b===S.vb?`<button data-i="${i}" aria-pressed="${i===S.i||i===S.cmp}">${t.ar}<small>${t.en}</small><small class="pr">${t.pr} ريال</small></button>`:'').join('');
   $('one').setAttribute('aria-pressed',!S.cmpOn);$('two').setAttribute('aria-pressed',S.cmpOn);
   $('cmpHint').innerHTML=!S.cmpOn?'':'<span class="pk">⬅️ الشمال: <b>'+full(T)+'</b></span><span class="pk">➡️ اليمين: <b>'+(S.cmp<0?'اختار من أي ماركة':full(LENSES[S.cmp]))+'</b></span>';
-  const DS=desOf(T);$('iDes').innerHTML='<b>'+DS.ic+' التصميم: '+DS.ar+'</b><br>'+DS.tx;
-  $('des').value=S.dOv;
-  $('iName').textContent=full(T);$('iTag').textContent='صناعة '+BRANDS[T.b].from+'. '+T.tag;
-  $('iStars').innerHTML=RATE_L.map((l,k)=>`<div class="srow"><span>${l}</span><span class="st" aria-label="${T.r[k]} من 5">${'★'.repeat(T.r[k])}<i>${'★'.repeat(5-T.r[k])}</i></span></div>`).join('');
-  $('iBen').innerHTML=T.key.map(b=>`<li>${b}</li>`).join('');
-  $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<h3>${T.lux.t}</h3><ul>${T.lux.l.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  const DS=desOf(T),st=n=>`<span class="st">${'★'.repeat(n)}<i>${'★'.repeat(5-n)}</i></span>`;
+  $('iName').textContent=full(T)+' · '+T.pr+' ريال';$('iTag').textContent='صناعة '+BRANDS[T.b].from+'. '+T.tag;
+  $('iChips').innerHTML=`<span>${DS.ic} ${DS.ar}</span><span>🛡️ ${T.w}</span>`;
+  $('iLv').textContent='🛡️ طبقات الحماية: '+T.lv;
+  $('iProt').innerHTML=PROT_L.map((l,k)=>`<div><span>${l}</span>${st(T.p[k])}</div>`).join('');
+  const CR=[T.r[1],T.r[2],T.r[3],T.r[4]];
+  $('iComf').innerHTML=COMF_L.map((l,k)=>`<div><span>${l}</span>${st(CR[k])}</div>`).join('');
+  $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
+  $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
   $('fsName').textContent=full(T)+' · '+desOf(T).ar;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
@@ -765,12 +790,18 @@ document.querySelectorAll('.peek').forEach(b=>{b.addEventListener('pointerdown',
 /* ---------- customer summary ---------- */
 function sumText(){
   const T=LENSES[S.i],D=desOf(T),sg=v=>(v>0?'+':v<0?'-':'')+Math.abs(v).toFixed(2);
-  const rx=(S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':'—';
-  return {T,D,rx,lines:['👓 ملخص عدستك','العدسة: '+full(T)+' ('+BRANDS[T.b].from+')','التصميم: '+D.ar,'السعر: '+T.pr+' ريال','المقاس: '+rx+' · إضافة +'+S.add.toFixed(2),'أهم المميزات:'].concat(T.key.map(b=>'✓ '+b)).concat(T.lux?[T.lux.t].concat(T.lux.l.map(b=>'✦ '+b)):[])};
+  const rx=(S.sph||S.cyl)?sg(S.sph)+' / '+sg(S.cyl)+' × '+S.axis+'°':'';
+  const lines=['👓 ملخص عدستك','العدسة: '+full(T)+' ('+BRANDS[T.b].from+')','التصميم: '+D.ar,'السعر: '+T.pr+' ريال','طبقات الحماية: '+T.lv,'🛡️ '+T.w];
+  if(rx)lines.push('المقاس: '+rx);
+  T.tech.forEach(([n,b])=>lines.push('⚙️ '+n+': '+b));
+  if(T.lux)lines.push(T.lux.t+': '+T.lux.l.join('، '));
+  return {T,D,rx,lines};
 }
 $('sumB').addEventListener('click',()=>{
   const o=sumText(),esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  $('sumBody').innerHTML='<div class="row2"><span>العدسة</span><b>'+esc(full(o.T))+'</b></div><div class="row2"><span>الصناعة</span><b>'+BRANDS[o.T.b].from+'</b></div><div class="row2"><span>التصميم</span><b>'+o.D.ic+' '+o.D.ar+'</b></div><div class="row2"><span>السعر</span><b>'+o.T.pr+' ريال</b></div><div class="row2"><span>المقاس</span><b dir="ltr">'+o.rx+' · Add +'+S.add.toFixed(2)+'</b></div><ul class="ben">'+o.T.key.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul>'+(o.T.lux?'<div class="lux"><h3>'+o.T.lux.t+'</h3><ul>'+o.T.lux.l.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul></div>':'');
+  const rw=(a,b)=>'<div class="row2"><span>'+a+'</span><b>'+b+'</b></div>';
+  $('sumBody').innerHTML=rw('العدسة',esc(full(o.T)))+rw('الصناعة',BRANDS[o.T.b].from)+rw('التصميم',o.D.ic+' '+o.D.ar)+rw('السعر',o.T.pr+' ريال')+rw('طبقات الحماية',o.T.lv)+rw('الضمان',o.T.w.replace('ضمان ',''))+(o.rx?rw('المقاس','<span dir="ltr">'+o.rx+'</span>'):'')
+   +o.T.tech.map(([n,b])=>'<div class="tch"><b>'+n+'</b><span>'+b+'</span></div>').join('')+(o.T.lux?'<div class="lux"><b>'+o.T.lux.t+'</b> '+o.T.lux.l.join(' · ')+'</div>':'');
   $('sumWa').href='https://wa.me/?text='+encodeURIComponent(o.lines.join('\n'));
   $('sum').hidden=false;
 });
@@ -785,7 +816,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=29;
+const VER=30;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
