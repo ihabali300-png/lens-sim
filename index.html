@@ -110,7 +110,7 @@ details output{color:var(--accent);font-weight:700}
     <button id="fsUp" aria-label="الفئة التالية">◀</button>
     <button id="fsExit">خروج</button>
   </div>
-  <div id="ver">v25</div>
+  <div id="ver">v26</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -161,7 +161,7 @@ details output{color:var(--accent);font-weight:700}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 25 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 26 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 
@@ -459,7 +459,7 @@ function draw(){
   PANELS=[];
   const TA=LENSES[S.i],TB=S.cmp>=0?LENSES[S.cmp]:TA;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
-  K=isSplit()?1.5:document.body.classList.contains('fs')?1.5:1.6;
+  K=isSplit()?1.5:document.body.classList.contains('fs')?1.7:1.6; /* bigger lens drawing in full screen */
   if(isSplit()){
     const h=cw/2;drawPanel(0,h,TA,TA,true);drawPanel(h,h,TB,TB,true);
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#0d1430';ctx.fillRect(h-1.5,0,3,ch);
@@ -600,7 +600,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('resize',layout);
 paintScene();render();layout();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=25;
+const VER=26;
 try{if(location.protocol==='https:')fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const VER=(\d+)/);if(m&&+m[1]>VER)location.replace(location.pathname+'?v='+m[1])}).catch(()=>{})}catch(_){}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{paintScene();draw()});
 </script>
