@@ -43,7 +43,7 @@ button[aria-pressed="true"]{background:var(--accent);color:#231a04;border-color:
 #wrap{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#000;touch-action:none;cursor:grab}
 body.fs #wrap{position:fixed;z-index:999;border-radius:0;aspect-ratio:auto}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
-#fsbar{display:none;position:absolute;bottom:10px;flex-wrap:wrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:flex-start;padding-inline-start:8px}
+#fsbar{display:none;position:absolute;bottom:10px;flex-wrap:nowrap;left:8px;right:8px;gap:8px;align-items:center;justify-content:flex-start;padding-inline-start:8px}
 body.fs #fsbar{display:flex}
 #fsbar{pointer-events:none}#fsbar>*{pointer-events:auto}
 #fsSel{display:none;position:absolute;inset:0;direction:ltr;pointer-events:none}
@@ -77,9 +77,12 @@ body.fs #hint{bottom:auto;top:10px}
 #fsbar button[aria-pressed="true"]{background:var(--accent);color:#231a04}
 #focusRing{position:fixed;width:64px;height:64px;margin:-32px 0 0 -32px;border:2px solid #ffd23f;border-radius:50%;pointer-events:none;opacity:0;z-index:3000}
 #focusRing.on{animation:fR 1s ease-out}@keyframes fR{0%{opacity:1;transform:scale(1.4)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+#fsbar.t1{gap:5px}#fsbar.t1 button{padding:5px 8px}#fsbar.t1 #fsName{padding:5px 9px}
+#fsbar.t2 #fsDes small{display:none}#fsbar.t2 #fsDesI svg{width:30px;height:24px}
+#fsbar.t3 #fsBrand .bn{display:none}#fsbar.t3 #fsName{font-size:13px}
 #fsDes{display:flex;align-items:center;gap:7px;background:rgba(13,20,48,.82);border:1px solid rgba(232,196,106,.55);border-radius:10px;padding:3px 10px 3px 8px;white-space:nowrap}
 #fsDes .t{display:flex;flex-direction:column;line-height:1.15;text-align:right}
-#fsDes b{color:#e8c46a;font-size:13.5px}
+#fsDes b{color:#e8c46a;font-size:13px}
 #fsDes small{color:#d6def7;font-size:11px}
 #fsDesI svg{display:block}
 body.fs.split #fsDes{display:none}
@@ -252,7 +255,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v72</div>
+  <div id="ver">v73</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -331,7 +334,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 72 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 73 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -438,7 +441,7 @@ const full=T=>BRANDS[T.b].ar+' '+T.ar;
 function desIcon(i){const G='#e8c46a',N='#7d89b3',f=i>=1?G:N,b=i>=2?G:N,w1=i>=1?2.4:1.4,w2=i>=2?2.4:1.4;
  const dots=i===3?'<g fill="#fff">'+[[17.6,8],[15.9,12.5],[15.2,17],[15.9,21.5],[17.6,26]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="1"/>').join('')+'</g>':'';
  /* lens seen from the side: left = front face (to the world), right = back face (to the eye) */
- return '<svg width="40" height="32" viewBox="0 0 40 34"><path d="M5 3 Q10 17 5 31 L19 31 Q13 17 19 3Z" fill="rgba(150,190,255,.28)"/><path d="M5 3 Q10 17 5 31" fill="none" stroke="'+f+'" stroke-width="'+w1+'" stroke-linecap="round"/><path d="M19 3 Q13 17 19 31" fill="none" stroke="'+b+'" stroke-width="'+w2+'" stroke-linecap="round"/><path d="M5 3H19M5 31H19" stroke="'+N+'" stroke-width="1"/>'+dots+'<path d="M38 17 Q31 9.5 25 17 Q31 24.5 38 17Z" fill="#fff" opacity=".92"/><circle cx="29.6" cy="17" r="3" fill="#3b6fd8"/><circle cx="29" cy="17" r="1.3" fill="#0d1430"/></svg>'}
+ return '<svg width="34" height="28" viewBox="0 0 40 34"><path d="M5 3 Q10 17 5 31 L19 31 Q13 17 19 3Z" fill="rgba(150,190,255,.28)"/><path d="M5 3 Q10 17 5 31" fill="none" stroke="'+f+'" stroke-width="'+w1+'" stroke-linecap="round"/><path d="M19 3 Q13 17 19 31" fill="none" stroke="'+b+'" stroke-width="'+w2+'" stroke-linecap="round"/><path d="M5 3H19M5 31H19" stroke="'+N+'" stroke-width="1"/>'+dots+'<path d="M38 17 Q31 9.5 25 17 Q31 24.5 38 17Z" fill="#fff" opacity=".92"/><circle cx="29.6" cy="17" r="3" fill="#3b6fd8"/><circle cx="29" cy="17" r="1.3" fill="#0d1430"/></svg>'}
 const desOf=T=>DESIGNS[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d];
 function rxNarrow(T){
   const q=desOf(T).k, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
@@ -981,7 +984,7 @@ function render(){
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
   $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').textContent='تصميم '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
-  $('fsBrand').textContent=['🇰🇷','🇯🇵','🇩🇪'][T.b]+' '+BRANDS[T.b].from;
+  $('fsBrand').innerHTML=['🇰🇷','🇯🇵','🇩🇪'][T.b]+'<span class="bn"> '+BRANDS[T.b].from+'</span>';if(typeof fitBar==='function')requestAnimationFrame(fitBar);
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);if(typeof syncQ==='function')syncQ();$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
@@ -1074,14 +1077,23 @@ function syncSplit(){
   $('selA').value=S.i;if(S.cmp>=0)$('selB').value=S.cmp;
 }
 function enterFs(){goHash(MODE+'-full')}
+/* keep the full-screen bar on one row: step down padding, then the design subtitle, then the brand word */
+function fitBar(){const b=$('fsbar');if(!b||!document.body.classList.contains('fs'))return;b.classList.remove('t1','t2','t3');
+  for(const c of ['t1','t2','t3']){if(b.scrollWidth<=b.clientWidth+1)break;b.classList.add(c)}}
+/* live camera: turning the phone sideways opens full screen, turning it back returns to the normal view */
+let autoFs=false;
+function orientFs(){const land=innerWidth>innerHeight,fs=document.body.classList.contains('fs');
+  if(SRC==='live'&&land&&!fs){autoFs=true;enterFs()}
+  else if(!land&&fs&&autoFs){autoFs=false;exitFs()}}
+addEventListener('resize',()=>{clearTimeout(window.__oT);window.__oT=setTimeout(()=>{orientFs();fitBar()},250)});
 function doEnterFs(){
   setTimeout(()=>{if(typeof syncQ==='function')syncQ()},60);
   if(S.cmpOn&&S.cmp<0)S.cmp=S.i<LENSES.length-1?S.i+1:S.i-1;
-  document.body.classList.add('fs');syncSplit();layout();
+  document.body.classList.add('fs');syncSplit();layout();requestAnimationFrame(fitBar);
   /* no browser fullscreen API: Chrome shows an exit-fullscreen notice with it. Installed app opens full screen by itself. */
 }
 function exitFs(){if(location.hash.endsWith('-full'))history.back();else doExitFs()}
-function doExitFs(){
+function doExitFs(){autoFs=false;
   document.body.classList.remove('fs','split');
   try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(_){}
   layout();
@@ -1391,8 +1403,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=72;
-const NOTE='مربع التصميم: كلمة تصميم، والوجه الأمامي / الوجهين، ورسمة فيها العين|الكاميرا: توازن ألوان وإضاءة تلقائي أحسن|مع العدسة الذكية الخلفية بقت ثابتة، والعدسة بس اللي بتغمق|دوس مرتين على أي حتة عشان الفوكس يتظبط عليها';
+const VER=73;
+const NOTE='شريط ملء الشاشة رجع سطر واحد وثابت|الكاميرا الحية: لف الموبايل بالعرض يفتح ملء الشاشة، ورجّعه بالطول يقفله';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
