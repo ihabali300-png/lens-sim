@@ -75,6 +75,8 @@ body.fs.split #fsName,body.fs.split #fsUp,body.fs.split #fsDown,body.fs.split #h
 body.fs #hint{bottom:auto;top:10px}
 #fsbar button{background:rgba(13,20,48,.78);border-color:rgba(255,255,255,.25);padding:6px 12px}
 #fsbar button[aria-pressed="true"]{background:var(--accent);color:#231a04}
+#focusRing{position:fixed;width:64px;height:64px;margin:-32px 0 0 -32px;border:2px solid #ffd23f;border-radius:50%;pointer-events:none;opacity:0;z-index:3000}
+#focusRing.on{animation:fR 1s ease-out}@keyframes fR{0%{opacity:1;transform:scale(1.4)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
 #fsDes{display:flex;align-items:center;gap:7px;background:rgba(13,20,48,.82);border:1px solid rgba(232,196,106,.55);border-radius:10px;padding:3px 10px 3px 8px;white-space:nowrap}
 #fsDes .t{display:flex;flex-direction:column;line-height:1.15;text-align:right}
 #fsDes b{color:#e8c46a;font-size:13.5px}
@@ -189,6 +191,8 @@ body.fs.split .peek{display:none}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="alF" color-interpolation-filters="sRGB"><feColorMatrix id="alM" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/></filter></svg>
+<div id="focusRing"></div>
 <button id="updB" aria-label="تحديث التطبيق">⟳<i></i></button>
 <div id="updT"><div><span id="updTx">تحديث جديد متاح ✨</span><ul id="updN"></ul></div><button id="updGo">حدّث دلوقتي</button><button class="x" id="updX" aria-label="إغلاق">✕</button></div>
 <div id="home">
@@ -248,7 +252,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v71</div>
+  <div id="ver">v72</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -327,7 +331,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 71 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 72 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -373,8 +377,8 @@ const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكور
 const DZ=[.05,.03,.016,.006];
 const DESIGNS=[
  {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',sub:'تصميم تقليدي',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
- {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',sub:'محسّنة من الوش الأمامي',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
- {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,bl:.7,ic:'🟡',sub:'محسّنة من الوشّين',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
+ {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',sub:'محسّنة من الوجه الأمامي',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
+ {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,bl:.7,ic:'🟡',sub:'محسّنة من الوجهين',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
  {ar:'فري فورم',en:'FreeForm',k:.5,bl:.55,ic:'🟣',sub:'مفصّلة رقمياً على عينك',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
 ];
 const B_ULT=B_ELI.concat(['أعلى فئة يابانية: أوسع مجال وأقل تشويش في كلاريفو']);
@@ -431,9 +435,10 @@ const full=T=>BRANDS[T.b].ar+' '+T.ar;
 
 /* ---------- simplified zone model ---------- */
 /* small lens cross-section: the improved surfaces glow gold (front = left, back = right) */
-function desIcon(i){const G='#e8c46a',N='#7d89b3',f=i>=1?G:N,b=i>=2?G:N,w1=i>=1?2.2:1.4,w2=i>=2?2.2:1.4;
- const dots=i===3?'<g fill="#fff">'+[7,12,17,22,27].map(y=>'<circle cx="'+(y===17?14.6:y===12||y===22?15.6:17.4)+'" cy="'+y+'" r="1.1"/>').join('')+'</g>':'';
- return '<svg width="24" height="32" viewBox="0 0 24 34"><path d="M5 3 Q10 17 5 31 L19 31 Q13 17 19 3Z" fill="rgba(150,190,255,.28)"/><path d="M5 3 Q10 17 5 31" fill="none" stroke="'+f+'" stroke-width="'+w1+'" stroke-linecap="round"/><path d="M19 3 Q13 17 19 31" fill="none" stroke="'+b+'" stroke-width="'+w2+'" stroke-linecap="round"/><path d="M5 3H19M5 31H19" stroke="'+N+'" stroke-width="1"/>'+dots+'</svg>'}
+function desIcon(i){const G='#e8c46a',N='#7d89b3',f=i>=1?G:N,b=i>=2?G:N,w1=i>=1?2.4:1.4,w2=i>=2?2.4:1.4;
+ const dots=i===3?'<g fill="#fff">'+[[17.6,8],[15.9,12.5],[15.2,17],[15.9,21.5],[17.6,26]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="1"/>').join('')+'</g>':'';
+ /* lens seen from the side: left = front face (to the world), right = back face (to the eye) */
+ return '<svg width="40" height="32" viewBox="0 0 40 34"><path d="M5 3 Q10 17 5 31 L19 31 Q13 17 19 3Z" fill="rgba(150,190,255,.28)"/><path d="M5 3 Q10 17 5 31" fill="none" stroke="'+f+'" stroke-width="'+w1+'" stroke-linecap="round"/><path d="M19 3 Q13 17 19 31" fill="none" stroke="'+b+'" stroke-width="'+w2+'" stroke-linecap="round"/><path d="M5 3H19M5 31H19" stroke="'+N+'" stroke-width="1"/>'+dots+'<path d="M38 17 Q31 9.5 25 17 Q31 24.5 38 17Z" fill="#fff" opacity=".92"/><circle cx="29.6" cy="17" r="3" fill="#3b6fd8"/><circle cx="29" cy="17" r="1.3" fill="#0d1430"/></svg>'}
 const desOf=T=>DESIGNS[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d];
 function rxNarrow(T){
   const q=desOf(T).k, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
@@ -700,12 +705,34 @@ function blurChain(){
 }
 function coverInto(el,w,h,turn){
   const c=sharp.getContext('2d');c.setTransform(1,0,0,1,0,0);
+  if(SRC==='live'&&el===vid){if(AL.n++%12===0)autoLevels();if(AL.ok)c.filter='url(#alF) saturate(1.08)'}
   const W=sharp.width,ew=turn?h:w,eh=turn?w:h,s=Math.max(W/ew,sharp.height/eh)*(ew>eh?(SRC==='live'?1.15:1.35):1); /* landscape frames get the same comfortable zoom as portrait ones */
   if(turn){ /* screen is locked upright but the view is turned sideways: turn the camera frame to match */
     c.save();c.translate(W/2,sharp.height/2);c.rotate(-Math.PI/2);c.drawImage(el,-w*s/2,-h*s/2,w*s,h*s);c.restore();
   } else c.drawImage(el,(W-w*s)/2,(sharp.height-h*s)/2,w*s,h*s);
+  c.filter='none';
   blurChain();
 }
+/* camera controls: focus always continuous; with a smart (tinted) lens on, exposure and white balance are held still
+   so only the lens darkens / clears while you move it, not the whole picture */
+function camCtl(){try{const tr=stream&&stream.getVideoTracks()[0];if(!tr||!tr.getCapabilities)return;const cp=tr.getCapabilities(),hold=S.tint!=='none',a={};
+  if(cp.focusMode&&cp.focusMode.includes('continuous'))a.focusMode='continuous';
+  const pick=(k)=>{const m=cp[k];if(!m)return;if(hold&&m.includes('manual'))a[k]='manual';else if(m.includes('continuous'))a[k]='continuous'};pick('exposureMode');pick('whiteBalanceMode');
+  if(Object.keys(a).length)tr.applyConstraints({advanced:[a]}).catch(()=>{})}catch(_){}}
+function camFocus(e){try{const tr=stream&&stream.getVideoTracks()[0];if(!tr||!tr.getCapabilities)return;const cp=tr.getCapabilities();if(!cp.focusMode)return;
+  const r=cv.getBoundingClientRect(),pt={x:clamp((e.clientX-r.left)/r.width,0,1),y:clamp((e.clientY-r.top)/r.height,0,1)};
+  const a={pointsOfInterest:[pt]};if(cp.focusMode.includes('single-shot'))a.focusMode='single-shot';
+  tr.applyConstraints({advanced:[a]}).then(()=>setTimeout(camCtl,1500)).catch(()=>{});
+  const f=$('focusRing');if(f){f.style.left=e.clientX+'px';f.style.top=e.clientY+'px';f.classList.remove('on');void f.offsetWidth;f.classList.add('on')}}catch(_){}}
+/* picture clean-up for the raw camera stream: white balance, exposure and contrast (held still while a tinted lens is on) */
+const AL={n:0,m:[1,1,1],lo:0,hi:1,ok:0};
+function autoLevels(){if(S.tint!=='none'&&AL.ok)return;try{const c=window.__al||(window.__al=mk(48,27)),k=c.getContext('2d',{willReadFrequently:true});k.drawImage(vid,0,0,48,27);const d=k.getImageData(0,0,48,27).data,H=new Uint32Array(64);let r=0,g=0,b=0,n=d.length/4;
+  for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];H[Math.min(63,(.3*d[i]+.59*d[i+1]+.11*d[i+2])>>2)]++}
+  r/=n;g/=n;b/=n;const gy=(r+g+b)/3,q=p=>{let a=0;for(let i=0;i<64;i++){a+=H[i];if(a>=n*p)return i*4/255}return 1};
+  const t=[clamp(gy/r,.9,1.12),clamp(gy/g,.9,1.12),clamp(gy/b,.9,1.12)],lo=Math.min(.12,q(.02)),hi=Math.max(.75,q(.985)),e=AL.ok?.25:1;
+  for(let i=0;i<3;i++)AL.m[i]+=(t[i]-AL.m[i])*e;AL.lo+=(lo-AL.lo)*e;AL.hi+=(hi-AL.hi)*e;AL.ok=1;
+  const kq=Math.min(1.3,1/Math.max(.5,AL.hi-AL.lo)),M=$('alM');
+  if(M)M.setAttribute('values',[AL.m[0]*kq,0,0,0,-AL.lo*kq, 0,AL.m[1]*kq,0,0,-AL.lo*kq, 0,0,AL.m[2]*kq,0,-AL.lo*kq, 0,0,0,1,0].map(v=>v.toFixed(4)).join(' '))}catch(_){}}
 function msg(t){const m=$('camMsg');m.textContent=t||'';m.hidden=!t}
 function stopLive(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if(vid){try{vid.pause();vid.srcObject=null}catch(_){}vid=null}if(typeof syncSrc==='function')syncSrc()}
 /* live loop: one render per new camera frame (max ~30/s, not 120/s on fast screens), resolution adapts to the phone's speed */
@@ -721,8 +748,12 @@ $('live').addEventListener('click',async()=>{
   try{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});
     try{const tr=stream.getVideoTracks()[0],cp=tr.getCapabilities?tr.getCapabilities():{};const adv={};if(cp.focusMode&&cp.focusMode.includes('continuous'))adv.focusMode='continuous';if(cp.exposureMode&&cp.exposureMode.includes('continuous'))adv.exposureMode='continuous';if(cp.whiteBalanceMode&&cp.whiteBalanceMode.includes('continuous'))adv.whiteBalanceMode='continuous';if(Object.keys(adv).length)tr.applyConstraints({advanced:[adv]}).catch(()=>{})}catch(_){}
+    try{const tr0=stream.getVideoTracks()[0],ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput'&&/back|rear|environment/i.test(d.label));
+      const main=ds.map(d=>({d,n:+((d.label.match(/camera2?\s*(\d+)/i)||[])[1]??99)})).sort((a,b)=>a.n-b.n)[0];
+      if(main&&main.d.deviceId&&tr0.getSettings&&tr0.getSettings().deviceId!==main.d.deviceId){stream.getTracks().forEach(t=>t.stop());
+        stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:main.d.deviceId},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false})}}catch(_){}
     vid=document.createElement('video');vid.muted=true;vid.playsInline=true;vid.srcObject=stream;await vid.play();
-    SRC='live';srcRes();syncSrc();depKick(true);lastT=0;pEma=16;layout();loop();
+    SRC='live';srcRes();syncSrc();depKick(true);lastT=0;pEma=16;AL.n=0;layout();loop();setTimeout(camCtl,400);
   }catch(e){stopLive();
     const n=e&&e.name||'', inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
     let t;
@@ -949,7 +980,7 @@ function render(){
   $('iComf').innerHTML=COMF_L.map((l,k)=>`<div><span>${l}</span>${st(CR[k])}</div>`).join('');
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
-  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').textContent=D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
+  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').textContent='تصميم '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
   $('fsBrand').textContent=['🇰🇷','🇯🇵','🇩🇪'][T.b]+' '+BRANDS[T.b].from;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
@@ -1080,6 +1111,7 @@ cv.addEventListener('pointermove',e=>{
   S.gx=clamp(S.gx+dx/sc,25,SW-25);S.gy=clamp(S.gy+dy/sc,20,72);reqDraw();if(typeof tintRun==='function')tintRun();
 });
 cv.addEventListener('pointerup',e=>{if(inkCur){inkCur=null;return}if(drag&&moved<6){const z=zoneAt(e);if(z)toggleZ(z)}drag=null});
+let lastTap=0;cv.addEventListener('pointerup',e=>{if(SRC!=='live'||e.pointerType==='pen')return;const t=performance.now();if(t-lastTap<300)camFocus(e);lastTap=t});
 cv.addEventListener('pointercancel',()=>{drag=null;inkCur=null});
 /* ---------- pen / S Pen drawing ---------- */
 const ink=$('ink'),ictx=ink.getContext('2d');let strokes=[],inkCur=null,inkCol='#ff3b4e';
@@ -1288,7 +1320,7 @@ function tintPanel(){
   document.querySelectorAll('.spdB').forEach(b=>b.textContent='⏩ ×'+S.spd);
   tintUi(tintTarget());draw();
 }
-function setTint(t){S.tint=t;S.tcol=Math.min(S.tcol,t==='none'?0:TINTS[t].cols.length-1);S.dk=0;S.ever=false;tintPanel();tintRun()}
+function setTint(t){S.tint=t;if(SRC==='live')setTimeout(camCtl,50);S.tcol=Math.min(S.tcol,t==='none'?0:TINTS[t].cols.length-1);S.dk=0;S.ever=false;tintPanel();tintRun()}
 $('tType').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTint(b.dataset.t)});
 $('tDots').addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;S.tcol=+b.dataset.i;b.classList.add('lit');setTimeout(()=>{$('tPanel').classList.remove('pop');tintPanel()},120)});
 document.querySelectorAll('.sunB').forEach(b=>b.addEventListener('click',()=>{S.sun={auto:'sun',sun:'shade',shade:'auto'}[S.sun];tintPanel();tintRun()}));
@@ -1359,8 +1391,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=71;
-const NOTE='مربع تصميم العدسة بقى منفصل، بشرح بسيط ورسمة توضيحية|خط منطقة الوضوح بقى أرفع|اتشالت الحلقة الباهتة حوالين منطقة الوضوح';
+const VER=72;
+const NOTE='مربع التصميم: كلمة تصميم، والوجه الأمامي / الوجهين، ورسمة فيها العين|الكاميرا: توازن ألوان وإضاءة تلقائي أحسن|مع العدسة الذكية الخلفية بقت ثابتة، والعدسة بس اللي بتغمق|دوس مرتين على أي حتة عشان الفوكس يتظبط عليها';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
