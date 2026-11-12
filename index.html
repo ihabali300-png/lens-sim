@@ -77,12 +77,13 @@ body.fs #hint{bottom:auto;top:10px}
 #fsbar button[aria-pressed="true"]{background:var(--accent);color:#231a04}
 #focusRing{position:fixed;width:64px;height:64px;margin:-32px 0 0 -32px;border:2px solid #ffd23f;border-radius:50%;pointer-events:none;opacity:0;z-index:3000}
 #focusRing.on{animation:fR 1s ease-out}@keyframes fR{0%{opacity:1;transform:scale(1.4)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+#fsbar>*{flex-shrink:0;white-space:nowrap}#fsName,#fsBrand,#fsDes{justify-content:center;text-align:center}#fsBrand{display:flex;align-items:center;justify-content:center;gap:4px}
 #fsbar.t1{gap:5px}#fsbar.t1 button{padding:5px 8px}#fsbar.t1 #fsName{padding:5px 9px}
 #fsbar.t2 #fsDes small{display:none}#fsbar.t2 #fsDesI svg{width:30px;height:24px}
 #fsbar.t3 #fsBrand .bn{display:none}#fsbar.t3 #fsName{font-size:13px}
 #fsDes{display:flex;align-items:center;gap:7px;background:rgba(13,20,48,.82);border:1px solid rgba(232,196,106,.55);border-radius:10px;padding:3px 10px 3px 8px;white-space:nowrap}
 #fsDes .t{display:flex;flex-direction:column;line-height:1.15;text-align:right}
-#fsDes b{color:#e8c46a;font-size:13px}
+#fsDes b{color:#e8c46a;font-size:13px}#fsDes b i{font-style:normal;font-weight:500;font-size:10.5px;color:#a4b0d6}
 #fsDes small{color:#d6def7;font-size:11px}
 #fsDesI svg{display:block}
 body.fs.split #fsDes{display:none}
@@ -255,7 +256,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v73</div>
+  <div id="ver">v74</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -334,7 +335,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 73 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 74 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -379,7 +380,7 @@ const B_PRM=B_DIG.concat(['مجال أوسع للقراءة والشاشة']);
 const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكورية']);
 const DZ=[.05,.03,.016,.006];
 const DESIGNS=[
- {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',sub:'تصميم تقليدي',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
+ {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',sub:'عدسة تقليدية',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
  {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',sub:'محسّنة من الوجه الأمامي',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
  {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,bl:.7,ic:'🟡',sub:'محسّنة من الوجهين',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
  {ar:'فري فورم',en:'FreeForm',k:.5,bl:.55,ic:'🟣',sub:'مفصّلة رقمياً على عينك',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
@@ -983,8 +984,8 @@ function render(){
   $('iComf').innerHTML=COMF_L.map((l,k)=>`<div><span>${l}</span>${st(CR[k])}</div>`).join('');
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
-  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').textContent='تصميم '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
-  $('fsBrand').innerHTML=['🇰🇷','🇯🇵','🇩🇪'][T.b]+'<span class="bn"> '+BRANDS[T.b].from+'</span>';if(typeof fitBar==='function')requestAnimationFrame(fitBar);
+  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').innerHTML='<i>تصميم</i> '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
+  $('fsBrand').innerHTML=['🇰🇷','🇯🇵','🇩🇪'][T.b]+'<span class="bn"> '+BRANDS[T.b].from+'</span>';
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
   $('oAdd').textContent='+'+S.add.toFixed(2);if(typeof syncQ==='function')syncQ();$('oSph').textContent=sg(S.sph);$('oCyl').textContent=sg(S.cyl);$('oAxis').textContent=S.axis+'°';
@@ -1078,8 +1079,19 @@ function syncSplit(){
 }
 function enterFs(){goHash(MODE+'-full')}
 /* keep the full-screen bar on one row: step down padding, then the design subtitle, then the brand word */
-function fitBar(){const b=$('fsbar');if(!b||!document.body.classList.contains('fs'))return;b.classList.remove('t1','t2','t3');
-  for(const c of ['t1','t2','t3']){if(b.scrollWidth<=b.clientWidth+1)break;b.classList.add(c)}}
+function fitBar(){const b=$('fsbar');if(!b||!document.body.classList.contains('fs'))return;
+  const N=$('fsName'),Br=$('fsBrand'),Ds=$('fsDes'),T=$('fsDesT'),Sb=$('fsDesS'),keep=[N.textContent,Br.innerHTML,T.innerHTML,Sb.textContent];
+  /* every box gets the width of its longest possible text, so cycling lenses never moves the bar */
+  const widest=(el,list,set)=>{el.style.minWidth='';let m=0;list.forEach(v=>{set(v);m=Math.max(m,el.getBoundingClientRect().width)});return Math.ceil(m)};
+  const fl=['🇰🇷','🇯🇵','🇩🇪'];
+  b.classList.remove('t1','t2','t3');
+  for(const c of ['','t1','t2','t3']){if(c)b.classList.add(c);
+    const wN=widest(N,LENSES.map(x=>full(x)),v=>N.textContent=v);
+    const wB=widest(Br,BRANDS.map((x,k)=>fl[k]+'<span class="bn"> '+x.from+'</span>'),v=>Br.innerHTML=v);
+    const wD=widest(Ds,DESIGNS.map(x=>x),x=>{T.innerHTML='<i>تصميم</i> '+x.ar;Sb.textContent=x.sub});
+    N.textContent=keep[0];Br.innerHTML=keep[1];T.innerHTML=keep[2];Sb.textContent=keep[3];
+    N.style.minWidth=wN+'px';Br.style.minWidth=wB+'px';Ds.style.minWidth=wD+'px';
+    if(b.scrollWidth<=b.clientWidth+1)break}}
 /* live camera: turning the phone sideways opens full screen, turning it back returns to the normal view */
 let autoFs=false;
 function orientFs(){const land=innerWidth>innerHeight,fs=document.body.classList.contains('fs');
@@ -1403,8 +1415,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=73;
-const NOTE='شريط ملء الشاشة رجع سطر واحد وثابت|الكاميرا الحية: لف الموبايل بالعرض يفتح ملء الشاشة، ورجّعه بالطول يقفله';
+const VER=74;
+const NOTE='الشريط بقى ثابت مكانه وانت بتقلّب بين العدسات|الزراير متناسقة: العلم والدولة في سطر واحد، وكلمة تصميم أصغر';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
