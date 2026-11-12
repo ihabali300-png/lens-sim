@@ -75,6 +75,12 @@ body.fs.split #fsName,body.fs.split #fsUp,body.fs.split #fsDown,body.fs.split #h
 body.fs #hint{bottom:auto;top:10px}
 #fsbar button{background:rgba(13,20,48,.78);border-color:rgba(255,255,255,.25);padding:6px 12px}
 #fsbar button[aria-pressed="true"]{background:var(--accent);color:#231a04}
+#fsDes{display:flex;align-items:center;gap:7px;background:rgba(13,20,48,.82);border:1px solid rgba(232,196,106,.55);border-radius:10px;padding:3px 10px 3px 8px;white-space:nowrap}
+#fsDes .t{display:flex;flex-direction:column;line-height:1.15;text-align:right}
+#fsDes b{color:#e8c46a;font-size:13.5px}
+#fsDes small{color:#d6def7;font-size:11px}
+#fsDesI svg{display:block}
+body.fs.split #fsDes{display:none}
 #fsName{background:var(--accent);color:#231a04;font-weight:700;border-radius:10px;padding:6px 14px;white-space:nowrap}
 #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(13,20,48,.78);border-radius:20px;padding:4px 14px;font-size:13px;pointer-events:none;white-space:nowrap}
 .big{width:100%;padding:11px;font-weight:700;font-size:16px;background:var(--accent);color:#231a04;border-color:var(--accent)}
@@ -227,6 +233,7 @@ body.fs.split .peek{display:none}
     <button id="fsBrand" aria-label="غيّر الماركة"></button>
     <button class="peek" aria-label="اضغط مطولاً لعرض العدسة الأساسية">👆 قبل</button>
     <div id="fsName"></div>
+    <div id="fsDes"><span id="fsDesI"></span><span class="t"><b id="fsDesT"></b><small id="fsDesS"></small></span></div>
     <button id="fsZ">مناطق الرؤية</button>
     <button id="fsTint" aria-label="العدسة المتغيرة">🕶️</button>
     <button id="fsScene" aria-label="غيّر المشهد">🎬</button>
@@ -241,7 +248,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v70</div>
+  <div id="ver">v71</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -320,7 +327,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 70 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 71 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -365,10 +372,10 @@ const B_PRM=B_DIG.concat(['مجال أوسع للقراءة والشاشة']);
 const B_OPT=B_PRM.concat(['أوسع مجال رؤية في الفئة الكورية']);
 const DZ=[.05,.03,.016,.006];
 const DESIGNS=[
- {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
- {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
- {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,bl:.7,ic:'🟡',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
- {ar:'فري فورم',en:'FreeForm',k:.5,bl:.55,ic:'🟣',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
+ {ar:'سفريك',en:'Spherical',k:1.6,bl:1,ic:'🔵',sub:'تصميم تقليدي',tx:'تصميم تقليدي: الأطراف أتخن، والتشويش على الجناب بيزيد مع المقاسات العالية.'},
+ {ar:'أسفريك',en:'Aspheric',k:1.15,bl:.85,ic:'🟢',sub:'محسّنة من الوش الأمامي',tx:'سطح محسوب: العدسة أرفع وأخف، والأطراف أوضح من السفريك.'},
+ {ar:'دبل أسفريك',en:'Double Aspheric',k:.8,bl:.7,ic:'🟡',sub:'محسّنة من الوشّين',tx:'الوشّين محسوبين: وضوح أكتر على الجناب، وعدسة أرفع وأفلت.'},
+ {ar:'فري فورم',en:'FreeForm',k:.5,bl:.55,ic:'🟣',sub:'مفصّلة رقمياً على عينك',tx:'محسوبة رقمياً نقطة بنقطة على مقاسك: أوسع مجال وأقل تشويش حتى مع المقاسات العالية.'}
 ];
 const B_ULT=B_ELI.concat(['أعلى فئة يابانية: أوسع مجال وأقل تشويش في كلاريفو']);
 const RATE_L=['وضوح البعيد','اتساع مجال الرؤية','نعومة الانتقال بين المسافات','راحة القراءة والشاشة','سهولة التعوّد'];
@@ -423,6 +430,10 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const full=T=>BRANDS[T.b].ar+' '+T.ar;
 
 /* ---------- simplified zone model ---------- */
+/* small lens cross-section: the improved surfaces glow gold (front = left, back = right) */
+function desIcon(i){const G='#e8c46a',N='#7d89b3',f=i>=1?G:N,b=i>=2?G:N,w1=i>=1?2.2:1.4,w2=i>=2?2.2:1.4;
+ const dots=i===3?'<g fill="#fff">'+[7,12,17,22,27].map(y=>'<circle cx="'+(y===17?14.6:y===12||y===22?15.6:17.4)+'" cy="'+y+'" r="1.1"/>').join('')+'</g>':'';
+ return '<svg width="24" height="32" viewBox="0 0 24 34"><path d="M5 3 Q10 17 5 31 L19 31 Q13 17 19 3Z" fill="rgba(150,190,255,.28)"/><path d="M5 3 Q10 17 5 31" fill="none" stroke="'+f+'" stroke-width="'+w1+'" stroke-linecap="round"/><path d="M19 3 Q13 17 19 31" fill="none" stroke="'+b+'" stroke-width="'+w2+'" stroke-linecap="round"/><path d="M5 3H19M5 31H19" stroke="'+N+'" stroke-width="1"/>'+dots+'</svg>'}
 const desOf=T=>DESIGNS[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d];
 function rxNarrow(T){
   const q=desOf(T).k, ob=Math.abs(Math.sin(2*S.axis*Math.PI/180));
@@ -833,7 +844,7 @@ function drawPanel(x0,w,TA,TB,split){
       if(ti>0){ctx.moveTo(cx+Rx*ti,cy);ctx.ellipse(cx,cy,Rx*ti,Ry*ti,0,0,7,true)}
       ctx.clip('evenodd');ctx.translate(cx,cy);ctx.rotate(ax);ctx.scale(mA*f,mP*f);ctx.rotate(-ax);ctx.translate(-cx,-cy);
       ctx.drawImage(src,0,0,cv.width,cv.height);ctx.restore()};
-    for(let n=NR;n>=1;n--){const t=t0+(1-t0)*n/NR,ti=t0+(1-t0)*(n-1)/NR,tm=t0+(1-t0)*(n-.5)/NR;dr(n===NR?1:t,ti*.995,1-kd*Math.pow((tm-t0)/(1-t0),2),hc)}
+    for(let n=NR;n>=1;n--){const t=t0+(1-t0)*n/NR,ti=t0+(1-t0)*(n-1)/NR,tm=t0+(1-t0)*(n-.5)/NR;dr(n===NR?1:t,ti*.995,1-kd*Math.pow((tm-t0)/(1-t0),2),n<=Math.ceil(NR*.6)?comp:hc)}
     dr(NR?t0:1,0,1,comp);
     /* coating look: off-white cast and anti-reflection colour */
     ctx.setTransform(1,0,0,1,0,0);
@@ -859,8 +870,8 @@ function drawPanel(x0,w,TA,TB,split){
   /* clear-zone boundary */
   [[TA,-1],[TB,1]].forEach(([T,sd])=>{
     ctx.beginPath();edgePath(ctx,T,sd,24,-30);
-    ctx.setLineDash([]);ctx.lineWidth=.9;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.stroke();
-    ctx.setLineDash([1.6,1.1]);ctx.lineWidth=.42;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.stroke();
+    ctx.setLineDash([]);ctx.lineWidth=.45;ctx.strokeStyle='rgba(0,0,0,.3)';ctx.stroke();
+    ctx.setLineDash([1.3,1]);ctx.lineWidth=.2;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();
   });
   ctx.setLineDash([]);
   if(TA!==TB){
@@ -938,7 +949,7 @@ function render(){
   $('iComf').innerHTML=COMF_L.map((l,k)=>`<div><span>${l}</span>${st(CR[k])}</div>`).join('');
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
-  $('fsName').textContent=full(T)+' · '+desOf(T).ar;
+  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').textContent=D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
   $('fsBrand').textContent=['🇰🇷','🇯🇵','🇩🇪'][T.b]+' '+BRANDS[T.b].from;
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
@@ -1348,8 +1359,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=70;
-const NOTE='الكاميرا الحية بقت بدقة Full HD بدل HD|الرسم على الشاشة بقى بدقة أعلى، فالصورة أحدّ|فوكس وإضاءة تلقائية مستمرة للكاميرا';
+const VER=71;
+const NOTE='مربع تصميم العدسة بقى منفصل، بشرح بسيط ورسمة توضيحية|خط منطقة الوضوح بقى أرفع|اتشالت الحلقة الباهتة حوالين منطقة الوضوح';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
