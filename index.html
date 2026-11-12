@@ -256,7 +256,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v74</div>
+  <div id="ver">v75</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -335,7 +335,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 74 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 75 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -872,7 +872,7 @@ function drawPanel(x0,w,TA,TB,split){
     const kd=DZ[(S.dOv>=0&&T===LENSES[S.i])?S.dOv:T.d]*(1+.06*Math.abs(S.sph))*(S.sph>0?-1:1)*(S.rxOn?Math.min(1,(Math.abs(S.sph)+Math.abs(S.cyl))/4):1),N=Math.abs(kd)>.002?48:1;
     const cr=isSV()?T.rc*rxNarrow(T):Math.min(26,halfW(T,0)),t0=clamp(cr/26,.25,.92);
     /* each ring is clipped to its own band so every pixel is drawn once; the bent edge is drawn from a half-size copy (it is blurred anyway) */
-    const NR=Math.abs(kd)>.002?(SRC==='live'?4:7):0;
+    const NR=Math.abs(kd)>.002?(SRC==='live'?7:14):0;
     if(NR){const hw=Math.ceil(cv.width/2),hh=Math.ceil(cv.height/2);if(hc.width!==hw||hc.height!==hh){hc.width=hw;hc.height=hh}hc.getContext('2d').drawImage(comp,0,0,hw,hh)}
     const dr=(t,ti,f,src)=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();
       if(t<1)ctx.ellipse(cx,cy,Rx*t,Ry*t,0,0,7);else ctx.rect(0,0,cv.width,cv.height);
@@ -881,6 +881,21 @@ function drawPanel(x0,w,TA,TB,split){
       ctx.drawImage(src,0,0,cv.width,cv.height);ctx.restore()};
     for(let n=NR;n>=1;n--){const t=t0+(1-t0)*n/NR,ti=t0+(1-t0)*(n-1)/NR,tm=t0+(1-t0)*(n-.5)/NR;dr(n===NR?1:t,ti*.995,1-kd*Math.pow((tm-t0)/(1-t0),2),n<=Math.ceil(NR*.6)?comp:hc)}
     dr(NR?t0:1,0,1,comp);
+    /* edge softness: a very light blur that starts between the clear centre and the rim and grows toward the edge,
+       on top of the edge minification above; simpler designs and stronger powers show more of it */
+    {const di=DESIGNS.indexOf(desOf(T)),eb=[.38,.27,.18,.09][di]*(S.rxOn?clamp(.45+(Math.abs(S.sph)+Math.abs(S.cyl))/5,.3,1.3):1);
+     if(eb>.02){const bx=Math.max(0,Math.floor(cx-Rx)),by=Math.max(0,Math.floor(cy-Ry)),bw=Math.min(cv.width,Math.ceil(cx+Rx))-bx,bh=Math.min(cv.height,Math.ceil(cy+Ry))-by;
+      if(bw>8&&bh>8){const q=5,qw=Math.ceil(bw/q),qh=Math.ceil(bh/q),E=window.__eb||(window.__eb=[mk(8,8),mk(8,8)]);
+        E.forEach(c=>{if(c.width!==qw||c.height!==qh){c.width=qw;c.height=qh}});
+        const e0=E[0].getContext('2d'),e1=E[1].getContext('2d');e0.imageSmoothingEnabled=true;e0.imageSmoothingQuality='medium';
+        e0.clearRect(0,0,qw,qh);e0.drawImage(cv,bx,by,bw,bh,0,0,qw,qh);
+        e1.globalCompositeOperation='copy';e1.imageSmoothingEnabled=true;e1.drawImage(E[0],-.6,-.6,qw+1.2,qh+1.2);e1.globalCompositeOperation='source-over';
+        e1.drawImage(E[0],.6,.6,qw-1.2,qh-1.2);
+        const ex=(cx-bx)/q,ey=(cy-by)/q,rx=Rx/q,ry=Ry/q,i0=clamp(t0*1.12,.3,.95);
+        e1.save();e1.globalCompositeOperation='destination-in';e1.translate(ex,ey);e1.scale(1,ry/rx);
+        const gr=e1.createRadialGradient(0,0,rx*i0,0,0,rx*1.02);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.35,'rgba(0,0,0,'+(eb*.35)+')');gr.addColorStop(1,'rgba(0,0,0,'+eb+')');
+        e1.fillStyle=gr;e1.fillRect(-rx*1.2,-rx*1.2,rx*2.4,rx*2.4);e1.restore();
+        ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=true;ctx.drawImage(E[1],0,0,qw,qh,bx,by,qw*q,qh*q);ctx.restore()}}}
     /* coating look: off-white cast and anti-reflection colour */
     ctx.setTransform(1,0,0,1,0,0);
     if(T.ow){ctx.globalCompositeOperation='multiply';ctx.globalAlpha=T.ow;ctx.fillStyle='#ffe9b8';ctx.fillRect(cx-Rx,cy-Ry,2*Rx,2*Ry)}
@@ -1415,8 +1430,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=74;
-const NOTE='الشريط بقى ثابت مكانه وانت بتقلّب بين العدسات|الزراير متناسقة: العلم والدولة في سطر واحد، وكلمة تصميم أصغر';
+const VER=75;
+const NOTE='أطراف العدسة: بلور خفيف جداً بيبدأ بعد منطقة الوضوح ويزيد ناحية الحافة|أقل في التصاميم الأحسن، وأكتر مع المقاسات العالية';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
