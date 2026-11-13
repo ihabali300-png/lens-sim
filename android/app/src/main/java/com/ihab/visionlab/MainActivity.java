@@ -12,6 +12,13 @@ import android.view.WindowManager;
 import android.webkit.*;
 import androidx.core.content.FileProvider;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import android.content.ContentValues;
+import android.os.Build;
+import android.os.Environment;
+import android.util.Base64;
+import android.widget.Toast;
 
 /* Full-screen wrapper around the IHAB Vision Lab web app, with camera and photo picking */
 public class MainActivity extends Activity {
@@ -60,6 +67,7 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
+        web.addJavascriptInterface(new Bridge(), "IHAB");
         if (b != null) web.restoreState(b); else web.loadUrl(URL);
     }
 
@@ -84,4 +92,37 @@ public class MainActivity extends Activity {
     @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) immersive(); }
     @Override protected void onSaveInstanceState(Bundle o) { super.onSaveInstanceState(o); web.saveState(o); }
     @Override public void onBackPressed() { if (web.canGoBack()) web.goBack(); else super.onBackPressed(); }
+
+    /* lets the web page save or share the lens card picture (WebView can't do it by itself) */
+    class Bridge {
+        @JavascriptInterface public boolean saveImage(String b64, String name) {
+            try {
+                byte[] png = Base64.decode(b64, Base64.DEFAULT);
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues v = new ContentValues();
+                    v.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+                    v.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                    v.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/IHAB Vision Lab");
+                    Uri u = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                    try (OutputStream o = getContentResolver().openOutputStream(u)) { o.write(png); }
+                } else {
+                    File d = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "IHAB Vision Lab"); d.mkdirs();
+                    File f = new File(d, name); try (FileOutputStream o = new FileOutputStream(f)) { o.write(png); }
+                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(f)));
+                }
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "اتحفظت في الصور ✅", Toast.LENGTH_SHORT).show());
+                return true;
+            } catch (Exception e) { return false; }
+        }
+        @JavascriptInterface public void shareImage(String b64, String name) {
+            try {
+                File f = new File(getCacheDir(), name);
+                try (FileOutputStream o = new FileOutputStream(f)) { o.write(Base64.decode(b64, Base64.DEFAULT)); }
+                Uri u = FileProvider.getUriForFile(MainActivity.this, BuildConfig.APPLICATION_ID + ".files", f);
+                Intent i = new Intent(Intent.ACTION_SEND); i.setType("image/png"); i.putExtra(Intent.EXTRA_STREAM, u);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(() -> startActivity(Intent.createChooser(i, "ابعت الصورة")));
+            } catch (Exception e) {}
+        }
+    }
 }
