@@ -87,7 +87,8 @@ body.fs #hint{bottom:auto;top:10px}
 #fsDes small{color:#d6def7;font-size:11px}
 #fsDesI svg{display:block}
 body.fs.split #fsDes{display:none}
-#fsName{background:var(--accent);color:#231a04;font-weight:700;border-radius:10px;padding:6px 14px;white-space:nowrap}
+#fsName{background:var(--accent);color:#231a04;font-weight:700;border-radius:10px;padding:2px 14px;white-space:nowrap;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+#fsName .st{display:inline-block;margin-top:2px;padding:0 7px;border-radius:8px;background:#231a04;color:#ffd23f;font-size:11px;letter-spacing:1.5px;line-height:15px}
 #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(13,20,48,.78);border-radius:20px;padding:4px 14px;font-size:13px;pointer-events:none;white-space:nowrap}
 .big{width:100%;padding:11px;font-weight:700;font-size:16px;background:var(--accent);color:#231a04;border-color:var(--accent)}
 ul.ben{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
@@ -256,7 +257,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v76</div>
+  <div id="ver">v77</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -335,7 +336,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 76 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 77 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1001,7 +1002,7 @@ function render(){
   $('iComf').innerHTML=COMF_L.map((l,k)=>`<div><span>${l}</span>${st(CR[k])}</div>`).join('');
   $('iTech').innerHTML=T.tech.map(([n,b])=>`<div class="tch"><b>${n}</b><span>${b}</span></div>`).join('');
   $('iLux').hidden=!T.lux;if(T.lux)$('iLux').innerHTML=`<b>${T.lux.t}</b> ${T.lux.l.join(' · ')}`;
-  $('fsName').textContent=full(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').innerHTML='<i>تصميم</i> '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
+  $('fsName').innerHTML=nameHTML(T);{const D=desOf(T),i=DESIGNS.indexOf(D);$('fsDesT').innerHTML='<i>تصميم</i> '+D.ar;$('fsDesS').textContent=D.sub;$('fsDesI').innerHTML=desIcon(i)}
   $('fsBrand').innerHTML=['🇰🇷','🇯🇵','🇩🇪'][T.b]+'<span class="bn"> '+BRANDS[T.b].from+'</span>';
   if(typeof syncSplit==='function')syncSplit();
   const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2);
@@ -1096,17 +1097,20 @@ function syncSplit(){
 }
 function enterFs(){goHash(MODE+'-full')}
 /* keep the full-screen bar on one row: step down padding, then the design subtitle, then the brand word */
+/* tier stars inside the lens-name box: lowest tier of a brand 3 stars, then 4, then 5 */
+function tierStars(T){const l=LENSES.filter(x=>x.b===T.b);return Math.min(5,3+l.indexOf(T))}
+function nameHTML(T){const n=tierStars(T);return '<span class="nm">'+full(T)+'</span><span class="st">'+'★'.repeat(n)+'</span>'}
 function fitBar(){const b=$('fsbar');if(!b||!document.body.classList.contains('fs'))return;
-  const N=$('fsName'),Br=$('fsBrand'),Ds=$('fsDes'),T=$('fsDesT'),Sb=$('fsDesS'),keep=[N.textContent,Br.innerHTML,T.innerHTML,Sb.textContent];
+  const N=$('fsName'),Br=$('fsBrand'),Ds=$('fsDes'),T=$('fsDesT'),Sb=$('fsDesS'),keep=[N.innerHTML,Br.innerHTML,T.innerHTML,Sb.textContent];
   /* every box gets the width of its longest possible text, so cycling lenses never moves the bar */
   const widest=(el,list,set)=>{el.style.minWidth='';let m=0;list.forEach(v=>{set(v);m=Math.max(m,el.getBoundingClientRect().width)});return Math.ceil(m)};
   const fl=['🇰🇷','🇯🇵','🇩🇪'];
   b.classList.remove('t1','t2','t3');
   for(const c of ['','t1','t2','t3']){if(c)b.classList.add(c);
-    const wN=widest(N,LENSES.map(x=>full(x)),v=>N.textContent=v);
+    const wN=widest(N,LENSES.map(x=>nameHTML(x)),v=>N.innerHTML=v);
     const wB=widest(Br,BRANDS.map((x,k)=>fl[k]+'<span class="bn"> '+x.from+'</span>'),v=>Br.innerHTML=v);
     const wD=widest(Ds,DESIGNS.map(x=>x),x=>{T.innerHTML='<i>تصميم</i> '+x.ar;Sb.textContent=x.sub});
-    N.textContent=keep[0];Br.innerHTML=keep[1];T.innerHTML=keep[2];Sb.textContent=keep[3];
+    N.innerHTML=keep[0];Br.innerHTML=keep[1];T.innerHTML=keep[2];Sb.textContent=keep[3];
     N.style.minWidth=wN+'px';Br.style.minWidth=wB+'px';Ds.style.minWidth=wD+'px';
     if(b.scrollWidth<=b.clientWidth+1)break}}
 /* live camera: turning the phone sideways opens full screen, turning it back returns to the normal view */
@@ -1467,8 +1471,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=76;
-const NOTE='كارت العدسة والمقارنة: رسمة مجالات الرؤية لكل عدسة بروجرسيف|زرار جديد: احفظ في الصور';
+const VER=77;
+const NOTE='نجوم دهبي جوه مربع اسم العدسة: أول فئة في الماركة 3 نجوم، والتانية 4، والتالتة 5';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
