@@ -257,7 +257,7 @@ body.fs.split .peek{display:none}
     <button id="noLensB" aria-pressed="false">👓 بدون عدسة</button>
   </div>
   <div id="depTag"></div>
-  <div id="ver">v77</div>
+  <div id="ver">v78</div>
   <div id="hint">اسحب العدسة · دوس على أي منطقة تتلوّن</div>
 </div>
 <button class="big" id="fsGo">عرض بملء الشاشة</button>
@@ -336,7 +336,7 @@ body.fs.split .peek{display:none}
   <p><label for="des">تصميم العدسة الأولى:</label></p>
   <select id="des" style="width:100%"><option value="-1">تلقائي حسب الفئة</option><option value="0">سفريك</option><option value="1">أسفريك</option><option value="2">دبل أسفريك</option><option value="3">فري فورم</option></select>
   <p id="rxLine" style="color:var(--ink)"></p>
-  <p>نسخة 77 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
+  <p>نسخة 78 · العرض توضيحي للمقارنة بين العدسات، ومساحات الرؤية مرسومة بشكل مبسّط وليست قياسات رسمية من المصنع.</p>
 </details>
 </main>
 <div id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmT">
@@ -1098,7 +1098,7 @@ function syncSplit(){
 function enterFs(){goHash(MODE+'-full')}
 /* keep the full-screen bar on one row: step down padding, then the design subtitle, then the brand word */
 /* tier stars inside the lens-name box: lowest tier of a brand 3 stars, then 4, then 5 */
-function tierStars(T){const l=LENSES.filter(x=>x.b===T.b);return Math.min(5,3+l.indexOf(T))}
+function tierStars(T){const l=LENSES.filter(x=>x.b===T.b);if(isSV()&&T.b===0)return 2;return Math.min(5,3+l.indexOf(T))}
 function nameHTML(T){const n=tierStars(T);return '<span class="nm">'+full(T)+'</span><span class="st">'+'★'.repeat(n)+'</span>'}
 function fitBar(){const b=$('fsbar');if(!b||!document.body.classList.contains('fs'))return;
   const N=$('fsName'),Br=$('fsBrand'),Ds=$('fsDes'),T=$('fsDesT'),Sb=$('fsDesS'),keep=[N.innerHTML,Br.innerHTML,T.innerHTML,Sb.textContent];
@@ -1471,8 +1471,8 @@ $('homeB').addEventListener('click',()=>{if(location.hash)history.back();else $(
 
 route();
 /* auto-update: if GitHub has a newer copy than the one cached on the phone, reload it */
-const VER=77;
-const NOTE='نجوم دهبي جوه مربع اسم العدسة: أول فئة في الماركة 3 نجوم، والتانية 4، والتالتة 5';
+const VER=78;
+const NOTE='أو سي ديجيتال بروتكت بقت نجمتين';
 (function(){try{let e=new URLSearchParams(location.search).get('ed');if(e)localStorage.setItem('ed',e);else e=localStorage.getItem('ed');
  const t=$('edTag');if(e==='pro'){t.textContent='✦ PRO · S23 Ultra';t.style.cssText+=';background:linear-gradient(90deg,#e8c46a,#c79a3a);color:#0d1430'}
  else if(e==='friend'){t.textContent='S24 Ultra';t.style.cssText+=';background:rgba(120,150,255,.18);color:#b9c8ff;border:1px solid #4a5ea8'}else return;t.hidden=false;document.title=e==='pro'?'IHAB Vision Lab Pro':'IHAB Vision Lab'}catch(_){}})();
